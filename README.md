@@ -12,11 +12,37 @@ Sem framework e sem "build": um `index.html` estático + um servidor simples (`s
 
 ---
 
+## ⭐ Os dois superpoderes
+
+O que torna este catálogo diferente de uma lista de links comum:
+
+### 🧲 Digest universal — jogue QUALQUER coisa, a IA entende e cataloga
+
+Você **não** precisa preencher formulário, escrever descrição nem escolher a categoria. Você **joga o conteúdo** — no formato que for — e uma **inteligência artificial lê, entende e devolve o card pronto** (título, descrição analítica, categoria e tipo, tudo sozinho):
+
+| Você joga… | …e a IA faz |
+|---|---|
+| 🔗 **Link / URL** (site, repositório, artigo) | abre a página, entende e resume |
+| 🖼️ **Print / imagem** | reconhece a ferramenta na tela — e se o print tiver **várias**, cria **vários cards de uma vez** |
+| 🎬 **Vídeo** (Reel, Short, TikTok, YouTube) | **vê os quadros** (o texto que aparece na tela) **e ouve o áudio** (a fala) para captar tudo que foi mostrado ou dito |
+| 🎧 **Áudio** | transcreve e cataloga o que foi falado |
+| 🎠 **Carrossel** (Instagram/LinkedIn) | cada slide que traz uma referência vira um card, sem duplicar |
+
+É **um único lugar** para transformar qualquer coisa que você achou pela internet num card organizado.
+
+> 🔑 **Precisa de uma chave gratuita do Google Gemini** (a "IA"). Sem ela o catálogo funciona normalmente — você só adiciona os cards na mão. **Ligar a IA leva ~2 minutos**, veja a **[Parte 2](#parte-2--ligar-a-ia-o-digest-universal)**. *(Vídeo, áudio e carrossel de redes sociais também usam o Cobalt — opcional, [Parte 5](#parte-5--avançado-links-de-rede-social-com-o-cobalt).)*
+
+### 🖱️ Reclassificar é só ARRASTAR
+
+Colocou na categoria errada? Quer mudar o tipo? **Segure o card e solte em cima de outra bolinha de categoria ou de tipo** — pronto, recategorizado na hora. Nada de menu, formulário ou editar código. *(Aparece só para quem desbloqueou a edição com a senha.)*
+
+---
+
 ## Índice
 
 - [O que dá pra fazer](#o-que-dá-pra-fazer)
 - [Parte 1 — Publicar o SEU catálogo (do zero)](#parte-1--publicar-o-seu-catálogo-do-zero)
-- [Parte 2 — Ligar a IA (adicionar por URL/print)](#parte-2--ligar-a-ia-adicionar-por-urlprint)
+- [Parte 2 — Ligar a IA (o digest universal)](#parte-2--ligar-a-ia-o-digest-universal)
 - [Parte 3 — Trocar ou atualizar as chaves depois](#parte-3--trocar-ou-atualizar-as-chaves-depois)
 - [Parte 4 — Publicar um espelho público (somente leitura)](#parte-4--publicar-um-espelho-público-somente-leitura)
 - [Parte 5 — (Avançado) Links de rede social com o Cobalt](#parte-5--avançado-links-de-rede-social-com-o-cobalt)
@@ -32,8 +58,9 @@ Sem framework e sem "build": um `index.html` estático + um servidor simples (`s
 
 - **Catalogar** links em **9 categorias** (IA, Design, Tipografia, Assets, Inspo, Audiovisual, Produtividade/Self-hosted, Safety, Cultura) e **3 tipos** (Site, Repo, Skill).
 - **Buscar** e **filtrar** por categoria (clique = uma; `Shift`+clique = somar) e por tipo.
-- **Adicionar por IA**: cole uma **URL**, solte um **print** (a IA identifica até várias ferramentas de uma vez) ou um **link social** (carrossel/vídeo).
-- **Editar na interface**: apagar cards e **arrastar** um card para outra categoria.
+- **Digest universal por IA** ⭐: jogue **URL, print, vídeo, áudio ou carrossel** — a IA lê e cria o card ([veja acima](#-os-dois-superpoderes)).
+- **Reclassificar arrastando** ⭐: pegue um card e solte em outra bolinha de categoria/tipo.
+- **Editar na interface**: apagar cards (o ×) direto no catálogo.
 - **Prints da home** dos sites (liga/desliga), sem armazenar imagens.
 - **Selinho "instalada"** para destacar itens especiais.
 - **Espelho público read-only** que reflete o seu catálogo ao vivo.
@@ -101,9 +128,9 @@ Por padrão, cada vez que o Railway republica, o catálogo poderia voltar ao est
 
 ---
 
-## Parte 2 — Ligar a IA (adicionar por URL/print)
+## Parte 2 — Ligar a IA (o digest universal)
 
-Para a IA ler links e prints e criar os cards, você precisa de uma **chave do Google Gemini** (tem plano gratuito).
+Este é o **superpoder** do catálogo: colar qualquer coisa e a IA cria o card. Para isso você precisa de uma **chave do Google Gemini** (tem plano gratuito e é rápido de obter).
 
 ### Como pegar a chave do Gemini (grátis)
 
@@ -118,15 +145,17 @@ Para a IA ler links e prints e criar os cards, você precisa de uma **chave do G
    - **Valor:** cole a chave que você copiou
 2. Salve (o site republica sozinho).
 
-### Como usar
+### Como usar (o digest universal)
 
 1. Abra o seu site e **desbloqueie** com a `EDIT_TOKEN`.
-2. No painel **"Adicionar referência"**:
-   - **Cole uma URL** e clique "Analisar URL" → a IA lê o site e cria o card.
-   - **Solte um print** (ou clique para escolher) → a IA identifica a(s) ferramenta(s).
-3. O card aparece na categoria certa. Você pode **arrastar** para outra categoria ou **apagar** (×).
+2. No painel **"Adicionar referência"**, jogue o que quiser:
+   - **Cole uma URL** (site, repositório, artigo) e clique "Analisar URL".
+   - **Solte um print / imagem** (ou clique para escolher) — se tiver várias ferramentas, cria vários cards.
+   - **Cole um link de rede social** (Reel, TikTok, YouTube, carrossel do Instagram/LinkedIn) — *requer o Cobalt, [Parte 5](#parte-5--avançado-links-de-rede-social-com-o-cobalt)*. A IA **vê os quadros do vídeo e ouve o áudio**.
+3. Em poucos segundos o card aparece na categoria certa, com título e descrição escritos pela IA.
+4. **Não gostou de onde caiu?** Só **arrastar o card** para outra bolinha de categoria/tipo. Para remover, o **×**.
 
-> A chave fica **só no servidor** — nunca aparece para quem visita o site.
+> 🔒 A chave fica **só no servidor** — nunca aparece para quem visita o site. E o app **não guarda** os vídeos/áudios: ele lê, cataloga e descarta.
 
 ---
 
