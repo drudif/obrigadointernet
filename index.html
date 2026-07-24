@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Obrigado, internet &lt;3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://api.fontshare.com">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
+  @import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap');
+
+  :root{
+    --paper:#f4efe6;        /* off-white quente */
+    --paper-2:#faf6ee;      /* superfície de card no hover */
+    --ink:#191512;          /* quase-preto quente */
+    --ink-2:#4c463d;        /* secundário */
+    --ink-3:#8a8272;        /* meta / faint */
+    --line:#191512;         /* borda brutalista */
+    --hair:#d8d0c0;         /* hairline suave */
+    /* categorias: hues bem separados — vermelho, laranja, âmbar, esmeralda, lima, ciano, violeta, magenta */
+    --ai:#7c3aed;      --design:#e8551e;  --type:#d61f2b;   --assets:#1f9d54;
+    --inspo:#2f6ae0;   --av:#0e8ba0;      --self:#c07d0a;   --sec:#b0208f;    --culture:#5b8c00;
+    --serif:"DM Serif Display",Georgia,"Times New Roman",serif;
+    --sans:"Satoshi","Helvetica Neue",system-ui,Arial,sans-serif;
+    --maxw:1240px;
+    --r:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-weight:500;line-height:1.5;
+    -webkit-font-smoothing:antialiased;font-feature-settings:"ss01";}
+  a{color:inherit;text-decoration:none}
+  ::selection{background:var(--ink);color:var(--paper)}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(20px,4vw,44px)}
+  .mono{font-variant-numeric:tabular-nums;letter-spacing:.02em}
+
+  /* ---------- HEADER ---------- */
+  header{padding:clamp(44px,6vw,80px) 0 26px;border-bottom:1.5px solid var(--line)}
+  .head-row{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  h1{font-family:var(--sans);font-weight:900;font-size:clamp(40px,8.5vw,112px);line-height:1;letter-spacing:0}
+  .title-svg{display:inline-block;height:.9em;width:auto;vertical-align:middle}
+  h1 .dot{color:var(--design)}
+  .px-heart{display:inline-block;width:.65em;height:.55em;vertical-align:middle;margin-left:.18em;transform:skewX(-12deg)}
+  .meta{text-align:right;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);line-height:1.9}
+  .meta b{color:var(--ink);font-weight:700}
+  .meta .live{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--self);margin-right:6px;vertical-align:middle}
+
+  /* ---------- FILTROS ---------- */
+  .filters{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1.5px solid var(--line)}
+  .filters .wrap{padding:14px clamp(20px,4vw,44px);display:flex;flex-direction:column;gap:11px}
+  .frow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .frow .flbl{width:58px;flex-shrink:0;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{border:1.5px solid var(--line);background:transparent;color:var(--ink);padding:7px 14px;border-radius:999px;
+    font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;cursor:pointer;font-family:inherit;
+    display:inline-flex;align-items:center;gap:8px;transition:background .15s,color .15s}
+  .chip .n{font-weight:500;color:var(--ink-3);font-variant-numeric:tabular-nums}
+  .chip:hover{background:var(--ink);color:var(--paper)}
+  .chip:hover .n{color:rgba(244,239,230,.65)}
+  .chip.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .chip.cat.active{background:var(--cc);border-color:var(--cc);color:var(--paper)}
+  .chip.active .n{color:rgba(244,239,230,.7)}
+  .swatch{width:9px;height:9px;display:inline-block;background:var(--cc);border-radius:50%}
+  .search{display:flex;align-items:center;gap:9px;border:1.5px solid var(--line);background:transparent;
+    padding:7px 15px;min-width:210px;flex:1;max-width:320px;border-radius:999px}
+  .search svg{stroke:var(--ink-3);fill:none;stroke-width:1.7;flex-shrink:0}
+  .search input{border:none;outline:none;background:transparent;color:var(--ink);font-family:inherit;font-size:13px;
+    font-weight:500;flex:1;min-width:0;letter-spacing:.02em}
+  .search input::placeholder{color:var(--ink-3);text-transform:uppercase;letter-spacing:.14em;font-size:11px;font-weight:700}
+  .search .clear{display:none;border:none;background:none;color:var(--ink-3);cursor:pointer;font-size:17px;line-height:1}
+  .search.has .clear{display:block}
+  .rc{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:700;white-space:nowrap}
+  .hint{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:700;opacity:.75}
+
+  /* ---------- SEÇÕES ---------- */
+  main{padding:20px 0 60px}
+  .section{padding-top:clamp(46px,6vw,74px)}
+  .section-head{display:flex;align-items:baseline;gap:16px;padding-bottom:16px;margin-bottom:24px;
+    border-bottom:1.5px solid var(--line)}
+  .section-head .ix{font-family:var(--serif);font-size:clamp(24px,3vw,40px);line-height:.9;color:var(--cc)}
+  .section-head h2{font-family:var(--sans);font-weight:900;font-size:clamp(24px,3.2vw,40px);line-height:1;
+    letter-spacing:-.01em;flex:1}
+  .section-head .count{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+  .card{background:transparent;border:1.5px solid var(--line);padding:0;display:flex;flex-direction:column;
+    position:relative;border-radius:var(--r);overflow:hidden;
+    transition:transform .18s cubic-bezier(.2,.9,.3,1),box-shadow .18s,background .18s}
+  .card .bar{height:5px;background:var(--cc)}
+  .card-thumb{width:100%;height:150px;object-fit:cover;object-position:top;display:block;border-bottom:1.5px solid var(--hair);filter:saturate(.95);background:var(--paper-2)}
+  .shots-toggle{margin-left:auto}
+  .shots-toggle .dotmini{width:7px;height:7px;border-radius:50%;background:var(--ink-3);display:inline-block;transition:background .15s}
+  .shots-toggle.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .shots-toggle.on .dotmini{background:var(--self)}
+  .card .pad{padding:20px 20px 18px;display:flex;flex-direction:column;gap:11px;flex:1}
+  .card:hover{background:var(--paper-2);transform:translate(-3px,-3px);box-shadow:6px 6px 0 var(--cc)}
+  .card-top{display:flex;flex-direction:column;align-items:flex-start;gap:9px}
+  .card-top h3{min-width:0}
+  .is-installed .card-top h3{padding-right:78px}
+  .card-seal{position:absolute;top:14px;right:12px;z-index:3;font-size:8.5px;font-weight:700;letter-spacing:.08em;
+    text-transform:uppercase;line-height:1;color:var(--cc);background:var(--paper);border:1.5px solid var(--cc);
+    padding:4px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;box-shadow:2px 2px 0 var(--cc)}
+  .card-tags{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+  .card h3{font-family:var(--sans);font-weight:900;font-size:21px;line-height:1.08;letter-spacing:-.02em}
+  .card h3 a:hover{color:var(--cc)}
+  .tag{font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--cc);
+    border:1.5px solid var(--cc);padding:3px 8px;white-space:nowrap;flex-shrink:0;line-height:1;border-radius:999px}
+  .card p{font-size:14px;line-height:1.5;color:var(--ink-2);font-weight:500;letter-spacing:-.002em}
+  .card .list{list-style:none;margin-top:2px;display:flex;flex-direction:column;gap:5px;font-size:13.5px;color:var(--ink-2)}
+  .card .list li{padding-left:16px;position:relative}
+  .card .list li::before{content:"—";position:absolute;left:0;color:var(--cc)}
+  .card .list b{color:var(--ink);font-weight:700}
+  .ttags{display:flex;flex-wrap:wrap;gap:6px}
+  .ttag{font-size:8.5px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;color:var(--ink-3);
+    border:1.5px solid var(--hair);padding:3px 8px;line-height:1;border-radius:999px}
+  .card-foot{margin-top:auto;padding-top:12px;border-top:1.5px solid var(--hair);display:flex;align-items:center;
+    justify-content:space-between;gap:10px}
+  .date{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+  .go{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);font-weight:700;
+    display:inline-flex;align-items:center;gap:6px}
+  .go:hover{color:var(--cc)}
+  .go .arw{transition:transform .25s}
+  .card:hover .go .arw{transform:translateX(4px)}
+  .local{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+
+  .empty{padding:80px 0;text-align:center;color:var(--ink-3);font-family:var(--serif);font-size:28px}
+  footer{border-top:1.5px solid var(--line);margin-top:60px}
+  footer .wrap{padding:34px clamp(20px,4vw,44px) 64px;font-size:12px;letter-spacing:.04em;color:var(--ink-3);font-weight:600}
+  footer b{color:var(--ink-2)}
+
+  /* exclusão de cards */
+  .foot-right{display:inline-flex;align-items:center;gap:11px}
+  .del{border:1.5px solid var(--hair);background:transparent;color:var(--ink-3);width:22px;height:22px;border-radius:999px;
+    font-size:15px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+    padding:0;opacity:0;transition:opacity .15s,color .15s,border-color .15s;font-family:var(--sans);flex-shrink:0}
+  .card:hover .del{opacity:.65}
+  .del:hover{opacity:1;color:#d61f2b;border-color:#d61f2b}
+  #delinfo{color:var(--ink-3)}
+  #delinfo b{color:var(--ink)}
+  .restore{color:var(--ink);text-decoration:underline;cursor:pointer}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,120%);z-index:80;display:flex;align-items:center;gap:16px;
+    background:var(--ink);color:var(--paper);border-radius:999px;padding:12px 14px 12px 22px;font-size:13px;letter-spacing:.01em;
+    box-shadow:0 8px 24px -8px rgba(0,0,0,.4);opacity:0;transition:transform .3s cubic-bezier(.2,.9,.3,1),opacity .3s}
+  .toast.show{transform:translate(-50%,0);opacity:1}
+  .toast button{border:1.5px solid rgba(244,239,230,.4);background:transparent;color:var(--paper);border-radius:999px;
+    padding:6px 15px;font-family:var(--sans);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+  .toast button:hover{background:rgba(244,239,230,.12)}
+
+  /* drag & drop de recategorização */
+  .card[draggable="true"]{cursor:grab}
+  .card.dragging{opacity:.4;cursor:grabbing}
+  .chip.drop-hover{outline:2px dashed var(--ink);outline-offset:3px;background:var(--paper-2)}
+
+  /* adicionar referência (Gemini) */
+  .adder{border-bottom:1.5px solid var(--line);background:var(--paper);display:none}
+  .adder .wrap{padding:clamp(20px,2.6vw,30px) clamp(20px,4vw,44px)}
+  .adder-head{font-family:var(--sans);font-weight:700;font-size:clamp(20px,2.4vw,30px);letter-spacing:-.02em;
+    margin-bottom:14px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .adder-sub{font-family:var(--sans);font-weight:500;font-size:12px;letter-spacing:0;color:var(--ink-3)}
+  .adder-head .add-btn{font-size:11px;padding:8px 15px;flex-shrink:0}
+  .adder-row,.key-row{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
+  .sync-lbl{font-size:12px;color:var(--ink-3);align-self:center;margin-right:2px;text-transform:uppercase;letter-spacing:.04em}
+  .key-row{margin-top:10px}
+  .add-input{flex:1;min-width:220px;border:1.5px solid var(--line);border-radius:999px;padding:11px 20px;background:transparent;
+    font-family:var(--sans);font-weight:500;font-size:14px;letter-spacing:-.01em;color:var(--ink);outline:none}
+  .add-input::placeholder{color:var(--ink-3)}
+  .add-btn{border:1.5px solid var(--line);background:var(--ink);color:var(--paper);border-radius:999px;padding:11px 22px;
+    font-family:var(--sans);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+  .add-btn.ghost{background:transparent;color:var(--ink)}
+  .dropzone{display:inline-flex;align-items:center;gap:8px;border:1.5px dashed var(--ink-3);border-radius:999px;padding:11px 22px;
+    cursor:pointer;color:var(--ink-3);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;transition:.15s;white-space:nowrap}
+  .dropzone:hover{border-color:var(--ink);color:var(--ink)}
+  .dropzone.over{border-color:var(--ink);color:var(--ink);background:var(--paper-2);border-style:solid}
+  .adder-status{margin-top:13px;font-size:13px;color:var(--ink-2);min-height:18px;display:flex;align-items:center}
+  .adder-status b{color:var(--ink)}
+  .spin{display:inline-block;width:13px;height:13px;border:2px solid var(--hair);border-top-color:var(--ink);border-radius:50%;
+    animation:refspin .7s linear infinite;margin-right:9px;flex-shrink:0}
+  @keyframes refspin{to{transform:rotate(360deg)}}
+
+  @media(max-width:640px){.grid{grid-template-columns:1fr}.frow .flbl{width:auto}.meta{text-align:left}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap head-row">
+    <h1><svg class="title-svg" viewBox="0 0 6575 900" fill="currentColor" role="img" aria-label="Obrigado, internet."><g transform="matrix(1 0 0 -1 -50 700)"><path d="M400 650V500H450V700H300V650ZM675 700H575V600H625V450H600V350H650V450H675ZM300 50H250V75H200V150H150V225H100V275H150V350H200V450H250V525H300V650H250V575H200V500H150V450H100V325H50V150H100V75H150V0H350V50H400V100H300ZM350 450H400V500H350ZM550 250H600V350H550ZM500 200H550V250H500ZM450 150H500V200H450ZM400 100H450V150H400ZM950 500H900V400H950ZM900 400H850V300H900ZM850 200V300H800V200ZM1050 300H900V250H1000V100H1050ZM750 200V50H800V200ZM950 50H1000V100H950ZM800 0H950V50H800ZM1250 300H1150V250H1200V100H1250V200H1300V250H1250ZM1300 300V250H1350V200H1400V300ZM1100 200H1150V250H1100ZM1150 50H1100V0H1200V100H1150ZM1600 400V350H1650V400ZM1600 300H1500V250H1550V200H1600ZM1550 200H1500V150H1550ZM1450 150V50H1500V150ZM1500 0H1650V50H1500ZM1900 250H2050V300H1900ZM2100 300V250H2150V300ZM1900 250H1850V200H1900ZM2050 100H2100V250H2050ZM1800 200V50H1850V200ZM2000 50H2050V100H2000ZM1850 0H1950V-50H2000V50H1850ZM1800 -50H1750V-100H1800ZM1900 -100H1950V-50H1900ZM1750 -100H1700V-200H1850V-150H1750ZM1850 -150H1900V-100H1850ZM2450 250V300H2300V250ZM2550 250V300H2500V250ZM2300 200V250H2250V200ZM2500 100V250H2450V100ZM2250 50V200H2200V50ZM2450 50V100H2400V50ZM2400 0V50H2250V0ZM2550 0V50H2450V0ZM2950 500V400H3000V500ZM2900 250H2950V400H2900ZM2850 250V300H2700V250ZM2700 250H2650V200H2700ZM2850 100H2900V250H2850ZM2600 200V50H2650V200ZM2800 50H2850V100H2800ZM2650 0H2800V50H2650ZM2950 0V50H2850V0ZM3150 250H3300V300H3150ZM3150 250H3100V200H3150ZM3300 250V100H3350V250ZM3050 200V50H3100V200ZM3250 50H3300V100H3250ZM3100 0H3250V50H3100ZM3450 0V50H3400V0ZM3500 -100V0H3450V-100ZM4075 400V350H4125V400ZM4075 300H3975V250H4025V200H4075ZM4025 200H3975V150H4025ZM3925 150V50H3975V150ZM3975 0H4125V50H3975ZM4325 300H4225V250H4275V100H4325V200H4375V250H4325ZM4375 300V250H4475V300ZM4175 200H4225V250H4175ZM4525 250H4475V100H4525ZM4225 50H4175V0H4275V100H4225ZM4425 100V0H4525V50H4475V100ZM4800 400V500H4750V400ZM4700 250H4850V300H4750V400H4700V300H4575V250H4650V150H4700ZM4600 150V50H4650V150ZM4800 100H4750V50H4800ZM4750 0V50H4650V0ZM5150 300H5000V250H5100V200H5150ZM4950 250V200H5000V250ZM4900 50H4950V200H4900ZM5000 150H5100V200H5000ZM5100 0V50H4950V0ZM5350 300H5250V250H5300V100H5350V200H5400V250H5350ZM5400 300V250H5450V200H5500V300ZM5200 200H5250V250H5200ZM5250 50H5200V0H5300V100H5250ZM5700 300H5600V250H5650V100H5700V200H5750V250H5700ZM5750 300V250H5850V300ZM5550 200H5600V250H5550ZM5900 250H5850V100H5900ZM5600 50H5550V0H5650V100H5600ZM5800 100V0H5900V50H5850V100ZM6200 300H6050V250H6150V200H6200ZM6000 250V200H6050V250ZM5950 50H6000V200H5950ZM6050 150H6150V200H6050ZM6150 0V50H6000V0ZM6475 400V500H6425V400ZM6375 250H6525V300H6425V400H6375V300H6250V250H6325V150H6375ZM6275 150V50H6325V150ZM6475 100H6425V50H6475ZM6425 0V50H6325V0ZM6625 0V50H6575V0Z"/></g></svg><span class="dot"><svg class="px-heart" viewBox="0 0 13 11" aria-label="coração" role="img" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="0" width="3" height="1"/><rect x="9" y="0" width="3" height="1"/><rect x="0" y="1" width="5" height="1"/><rect x="8" y="1" width="5" height="1"/><rect x="0" y="2" width="6" height="1"/><rect x="7" y="2" width="6" height="1"/><rect x="0" y="3" width="13" height="1"/><rect x="0" y="4" width="13" height="1"/><rect x="1" y="5" width="11" height="1"/><rect x="2" y="6" width="9" height="1"/><rect x="3" y="7" width="7" height="1"/><rect x="4" y="8" width="5" height="1"/><rect x="5" y="9" width="3" height="1"/><rect x="6" y="10" width="1" height="1"/></svg></span></h1>
+    <div class="meta">
+      <div><span class="live"></span>Último scan <b id="pubdate" class="mono">—</b></div>
+      <div><b id="total" class="mono">0</b> referências</div>
+      <div id="delinfo"></div>
+    </div>
+  </div>
+</header>
+
+<section class="adder">
+  <div class="wrap">
+    <div class="adder-head">
+      <span>Adicionar referência <span class="adder-sub">imagem ou URL — o Gemini lê, categoriza e cria o card</span></span>
+      <button id="exportBtn" class="add-btn ghost" title="Baixar refs-data.js com adições, edições e exclusões aplicadas">Exportar refs-data.js</button>
+    </div>
+    <div class="adder-row">
+      <input id="addUrl" class="add-input" placeholder="Cole uma URL…" autocomplete="off">
+      <button id="addUrlBtn" class="add-btn">Analisar URL</button>
+      <label id="dropZone" class="dropzone"><input type="file" id="addImg" accept="image/*" hidden><span>Solte uma imagem ou clique</span></label>
+    </div>
+    <div id="unlockRow" class="key-row" style="display:none">
+      <input id="etoken" class="add-input" type="password" placeholder="Senha de edição" autocomplete="off">
+      <button id="etokenBtn" class="add-btn">Desbloquear edição</button>
+    </div>
+    <div id="syncRow" class="key-row" style="display:none">
+      <span class="sync-lbl">Sincronizar com o deploy:</span>
+      <button id="pullBtn" class="add-btn ghost">↓ Puxar do deploy</button>
+      <button id="pushBtn" class="add-btn ghost">↑ Enviar pro deploy</button>
+    </div>
+    <div id="addStatus" class="adder-status"></div>
+  </div>
+</section>
+
+<nav class="filters">
+  <div class="wrap">
+    <div class="frow"><span class="flbl">Categoria</span><div class="chips" id="catbar"></div><span class="hint">⇧ shift = somar · arraste um card p/ um chip = recategoriza</span></div>
+    <div class="frow">
+      <span class="flbl">Tipo</span><div class="chips" id="typebar"></div>
+      <label class="search" id="searchbox">
+        <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+        <input type="search" id="search" placeholder="Buscar" autocomplete="off" spellcheck="false">
+        <button class="clear" id="clear" aria-label="Limpar">&times;</button>
+      </label>
+      <span class="rc" id="resultCount"></span>
+      <button class="chip shots-toggle" id="shotsToggle" title="Mostrar print da home nos cards de site (mShots)"><span class="dotmini"></span>Prints</button>
+    </div>
+  </div>
+</nav>
+
+<main class="wrap" id="content"></main>
+
+<div id="toast" class="toast"></div>
+
+<footer>
+  <div class="wrap">Catálogo curado de sites, repositórios, skills e ferramentas. Dados em <b>refs-data.js</b>. Funciona offline — abra o <b>index.html</b> direto.</div>
+</footer>
+
+<script src="refs-data.js"></script>
+<script>
+/* ============================================================
+   VIEW — cards. Categoria: clique = seleção única; shift = somar.
+   Tipo: múltiplo. + Busca. Descrição analítica sempre visível.
+   ============================================================ */
+const DATA=(window.REFS_DATA)||{scanDate:"",sources:{videos:0,images:0},refs:[]};
+const SCAN_DATE=DATA.scanDate||"";
+const REFS=DATA.refs||[];
+
+const CATS={
+  ai:     {label:"IA / Agentes",               c:"var(--ai)"},
+  design: {label:"Design / UI",                c:"var(--design)"},
+  type:   {label:"Tipografia",                 c:"var(--type)"},
+  assets: {label:"Assets",                     c:"var(--assets)"},
+  inspo:  {label:"Inspo",                       c:"var(--inspo)"},
+  av:     {label:"Audiovisual",                 c:"var(--av)"},
+  self:   {label:"Produtividade / Self-hosted", c:"var(--self)"},
+  sec:    {label:"Safety",                      c:"var(--sec)"},
+  culture:{label:"Cultura",                     c:"var(--culture)"},
+};
+const CATKEYS=Object.keys(CATS);
+const TYPES={repo:"Repos do Git",skill:"Skills do Claude",site:"Sites"};
+const TTAG={repo:"Repo Git",skill:"Skill",site:"Site"};
+
+const norm=s=>(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+function fmtDate(iso){if(!iso)return"—";const m=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];const[y,mo,d]=iso.split("-");return `${(+d)} ${m[+mo-1]} ${y}`;}
+const br=iso=>iso?iso.split("-").reverse().join("."):"";
+const pad2=n=>String(n).padStart(2,"0");
+const slug=s=>(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/&/g," e ").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").replace(/-+/g,"-").slice(0,60);
+
+// Modos: FILE (file://) · LOCALSRV (localhost) · DEPLOY (público, edição por senha).
+const FILE = location.protocol==="file:";
+const HTTP = location.protocol==="http:"||location.protocol==="https:";
+const LOCALSRV = HTTP && (location.hostname==="localhost"||location.hostname==="127.0.0.1");
+const DEPLOY = HTTP && !LOCALSRV;
+const SERVER = HTTP;                  // salva/analisa via API do servidor
+let EDIT_TOKEN = DEPLOY ? (sessionStorage.getItem("edit-token")||"") : "";
+let unlocked = !DEPLOY || !!EDIT_TOKEN;               // local/file: livre; deploy: precisa senha
+let READONLY = false;                                 // espelho: sem edição nenhuma (setado via /api/health)
+let healthKnown = !DEPLOY;                             // no deploy, espera o /api/health antes de revelar o painel
+const canEdit = ()=> !READONLY && (FILE || LOCALSRV || (DEPLOY && unlocked));   // deletar/arrastar
+const canAdd  = ()=> !READONLY && (LOCALSRV || (DEPLOY && unlocked));           // adder (Gemini precisa do servidor)
+const tokenHdr = ()=> EDIT_TOKEN ? {"x-edit-token":EDIT_TOKEN} : {};
+
+// recategorização por drag (overlays em localStorage só no modo FILE)
+const OKEY="refs-overrides";
+const overrides=FILE?JSON.parse(localStorage.getItem(OKEY)||"{}"):{};
+const saveOv=()=>localStorage.setItem(OKEY,JSON.stringify(overrides));
+if(FILE)REFS.forEach(r=>{const o=overrides[slug(r.title)]; if(o){ if(o.cat&&CATS[o.cat])r.cat=o.cat; if(Array.isArray(o.types))r.types=o.types; }});
+
+// refs criadas pela ferramenta (Gemini)
+const ADDKEY="refs-added";
+const added=FILE?JSON.parse(localStorage.getItem(ADDKEY)||"[]"):[];
+const saveAdded=()=>localStorage.setItem(ADDKEY,JSON.stringify(added));
+if(FILE)added.forEach(a=>{ if(!REFS.some(r=>slug(r.title)===slug(a.title))) REFS.push(a); });
+
+// persistência
+function cleanRef(r){const o={title:r.title,url:r.url||"",cat:r.cat,src:r.src||"link",types:r.types||[]};if(r.items)o.items=r.items;o.desc=r.desc||"";o.date=r.date||SCAN_DATE;["thumb","source"].forEach(k=>{if(r[k])o[k]=r[k];});if(r.installed)o.installed=true;return o;}
+function buildData(){const meta=window.REFS_DATA||{};return{scanDate:SCAN_DATE,firstScan:meta.firstScan||SCAN_DATE,generated:new Date().toISOString().slice(0,10),sources:meta.sources||{videos:0,images:0},refs:REFS.filter(live).map(cleanRef)};}
+async function saveToServer(){const res=await fetch("/api/save",{method:"POST",headers:{"content-type":"application/json",...tokenHdr()},body:JSON.stringify(buildData())});if(!res.ok)throw new Error("HTTP "+res.status);}
+function persist(){if(SERVER)saveToServer().catch(e=>toast("Erro ao salvar: "+e.message));}
+
+REFS.forEach(r=>{r._s=norm([r.title,r.desc,(r.items||[]).join(" "),CATS[r.cat]&&CATS[r.cat].label,(r.types||[]).map(t=>TTAG[t]).join(" "),r.url].join(" "));});
+
+document.getElementById("pubdate").textContent=fmtDate(SCAN_DATE);
+document.getElementById("total").textContent=REFS.length;
+
+const content=document.getElementById("content");
+const catbar=document.getElementById("catbar");
+const typebar=document.getElementById("typebar");
+const searchEl=document.getElementById("search");
+const searchBox=document.getElementById("searchbox");
+const clearBtn=document.getElementById("clear");
+const resultCount=document.getElementById("resultCount");
+
+const activeCats=new Set();
+const activeTypes=new Set();
+let query="";
+
+// exclusão de cards (persistida por navegador via localStorage)
+const DKEY="refs-deleted";
+const deleted=new Set(FILE?JSON.parse(localStorage.getItem(DKEY)||"[]"):[]);
+const saveDel=()=>localStorage.setItem(DKEY,JSON.stringify([...deleted]));
+const live=r=>!deleted.has(slug(r.title));
+const delinfo=document.getElementById("delinfo");
+function renderDelInfo(){
+  if(!delinfo)return;
+  if(deleted.size){
+    delinfo.innerHTML=`<b>${deleted.size}</b> oculta${deleted.size>1?'s':''} · <a class="restore" id="restoreAll">restaurar</a>`;
+    const ra=document.getElementById("restoreAll"); if(ra)ra.onclick=()=>{deleted.clear();saveDel();buildFilters();render();};
+  } else delinfo.innerHTML="";
+}
+let toastT;
+function toast(msg,undoFn){
+  const el=document.getElementById("toast"); if(!el)return;
+  el.innerHTML=`<span>${msg}</span>`+(undoFn?`<button id="undoBtn">Desfazer</button>`:"");
+  el.classList.add("show");
+  if(undoFn){const u=document.getElementById("undoBtn"); if(u)u.onclick=()=>{undoFn();el.classList.remove("show");};}
+  clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("show"),6000);
+}
+
+const mCat=r=>activeCats.size===0||activeCats.has(r.cat);
+const mType=r=>activeTypes.size===0||(r.types||[]).some(t=>activeTypes.has(t));
+const mSearch=r=>query===""||r._s.includes(query);
+const visible=r=>mCat(r)&&mType(r)&&mSearch(r)&&live(r);
+
+function buildFilters(){
+  const cc=k=>REFS.filter(r=>(k==="all"||r.cat===k)&&mType(r)&&mSearch(r)&&live(r)).length;
+  const catActive=k=>k==="all"?activeCats.size===0:activeCats.has(k);
+  let html=`<button class="chip${catActive("all")?' active':''}" data-cat="all">Tudo<span class="n">${cc("all")}</span></button>`;
+  CATKEYS.forEach(k=>{html+=`<button class="chip cat${activeCats.has(k)?' active':''}" data-cat="${k}" style="--cc:${CATS[k].c}"><span class="swatch"></span>${CATS[k].label}<span class="n">${cc(k)}</span></button>`;});
+  catbar.innerHTML=html;
+  catbar.querySelectorAll(".chip").forEach(b=>b.onclick=(e)=>{
+    const k=b.dataset.cat;
+    if(k==="all"){activeCats.clear();}
+    else if(e.shiftKey){activeCats.has(k)?activeCats.delete(k):activeCats.add(k);}
+    else{if(activeCats.size===1&&activeCats.has(k))activeCats.clear();else{activeCats.clear();activeCats.add(k);}}
+    buildFilters();render();
+  });
+
+  const tc=t=>REFS.filter(r=>mCat(r)&&mSearch(r)&&live(r)&&(r.types||[]).includes(t)).length;
+  typebar.innerHTML=Object.entries(TYPES).map(([t,v])=>`<button class="chip${activeTypes.has(t)?' active':''}" data-type="${t}">${v}<span class="n">${tc(t)}</span></button>`).join("");
+  typebar.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{const t=b.dataset.type;activeTypes.has(t)?activeTypes.delete(t):activeTypes.add(t);buildFilters();render();});
+}
+
+// prints da home (mShots do WordPress) — derivados da URL, nada é armazenado; toggle persistido
+let showShots=localStorage.getItem("refs-shots")==="1";
+const shotUrl=u=>"https://s.wordpress.com/mshots/v1/"+encodeURIComponent(u)+"?w=640&h=400";
+function card(r){
+  const cat=CATS[r.cat]||{label:r.cat,c:"var(--ink)"};
+  const body=r.items
+    ? `<p>${r.desc||""}</p><ul class="list">${r.items.map(x=>`<li>${x}</li>`).join("")}</ul>`
+    : `<p>${r.desc||""}</p>`;
+  const tags=(r.types||[]).filter(t=>TTAG[t]).map(t=>`<span class="ttag">${TTAG[t]}</span>`).join("");
+  const foot=r.url
+    ? `<a class="go" href="${r.url}" target="_blank" rel="noopener" draggable="false">Acessar <span class="arw">→</span></a>`
+    : `<span class="local">${r.installed?'Skill instalada':'Mídia local'}</span>`;
+  let thumbSrc=r.thumb||"";
+  if(!thumbSrc&&showShots&&r.url&&/^https?:\/\//i.test(r.url)&&(r.types||[]).includes("site")) thumbSrc=shotUrl(r.url);
+  const thumb=thumbSrc?`<img class="card-thumb" src="${thumbSrc}" loading="lazy" alt="" draggable="false" onerror="this.style.display='none'">`:"";
+  const seal=r.installed?`<span class="card-seal" title="Skill instalada na sua máquina">✓ instalada</span>`:"";
+  return `<article class="card${r.installed?' is-installed':''}" id="c-${slug(r.title)}" data-slug="${slug(r.title)}" draggable="${canEdit()?'true':'false'}" style="--cc:${cat.c}">
+    <div class="bar"></div>
+    ${seal}
+    ${thumb}
+    <div class="pad">
+      <div class="card-top">
+        <h3>${r.url?`<a href="${r.url}" target="_blank" rel="noopener" draggable="false">${r.title}</a>`:r.title}</h3>
+        <div class="card-tags"><span class="tag">${cat.label}</span>${tags}</div>
+      </div>
+      ${body}
+      <div class="card-foot">
+        <span class="date mono">${br(r.date||SCAN_DATE)}</span>
+        <span class="foot-right">${foot}${canEdit()?`<button class="del" data-del="${slug(r.title)}" title="Remover do catálogo" aria-label="Remover">×</button>`:""}</span>
+      </div>
+    </div>
+  </article>`;
+}
+
+function render(){
+  document.getElementById("total").textContent=REFS.filter(live).length;
+  renderDelInfo();
+  const total=REFS.filter(visible).length;
+  resultCount.textContent=(query||activeTypes.size||activeCats.size)?`${total} ${total===1?'resultado':'resultados'}`:"";
+  if(!REFS.length){content.innerHTML=`<p class="empty">Sem dados — refs-data.js ausente ou vazio.</p>`;return;}
+  const groups=CATKEYS.filter(k=>activeCats.size===0||activeCats.has(k));
+  let html="",n=0;
+  groups.forEach(k=>{
+    const items=REFS.filter(r=>r.cat===k&&mType(r)&&mSearch(r)&&live(r));
+    if(!items.length)return;
+    n++;
+    html+=`<section class="section" style="--cc:${CATS[k].c}">
+      <div class="section-head">
+        <h2>${CATS[k].label}</h2>
+        <span class="count">${pad2(items.length)} ${items.length===1?'entrada':'entradas'}</span>
+      </div>
+      <div class="grid">${items.map(card).join("")}</div>
+    </section>`;
+  });
+  content.innerHTML=html||`<p class="empty">Nada encontrado.</p>`;
+}
+
+let deb;
+searchEl.addEventListener("input",()=>{clearTimeout(deb);deb=setTimeout(()=>{query=norm(searchEl.value.trim());searchBox.classList.toggle("has",searchEl.value.length>0);buildFilters();render();},120);});
+clearBtn.addEventListener("click",()=>{searchEl.value="";query="";searchBox.classList.remove("has");searchEl.focus();buildFilters();render();});
+const shotsToggle=document.getElementById("shotsToggle");
+const paintShots=()=>shotsToggle.classList.toggle("on",showShots);
+shotsToggle.addEventListener("click",()=>{showShots=!showShots;localStorage.setItem("refs-shots",showShots?"1":"0");paintShots();render();});
+paintShots();
+
+// clique no × remove a referência (SERVER: apaga do arquivo · file://: oculta no navegador)
+content.addEventListener("click",e=>{
+  const b=e.target.closest(".del"); if(!b)return;
+  e.preventDefault(); e.stopPropagation();
+  const sl=b.dataset.del; if(!sl)return;
+  if(SERVER){
+    const i=REFS.findIndex(r=>slug(r.title)===sl); if(i<0)return;
+    const removed=REFS.splice(i,1)[0]; buildFilters(); render(); persist();
+    toast("Referência removida.",()=>{REFS.splice(Math.min(i,REFS.length),0,removed);buildFilters();render();persist();});
+  } else {
+    deleted.add(sl); saveDel(); buildFilters(); render();
+    toast("Referência removida.",()=>{deleted.delete(sl);saveDel();buildFilters();render();});
+  }
+});
+
+// ---- arrastar card para um chip de Categoria ou Tipo → recategoriza ----
+let dragSlug=null;
+content.addEventListener("dragstart",e=>{
+  const c=e.target.closest(".card"); if(!c)return;
+  dragSlug=c.dataset.slug; c.classList.add("dragging");
+  try{e.dataTransfer.setData("text/plain",dragSlug);e.dataTransfer.effectAllowed="move";}catch(_){}
+});
+content.addEventListener("dragend",e=>{
+  const c=e.target.closest(".card"); if(c)c.classList.remove("dragging");
+  dragSlug=null; document.querySelectorAll(".chip.drop-hover").forEach(x=>x.classList.remove("drop-hover"));
+});
+function applyMove(kind,val){
+  if(!dragSlug)return;
+  const r=REFS.find(x=>slug(x.title)===dragSlug); if(!r)return;
+  if(kind==="cat"){ if(r.cat===val)return; r.cat=val; toast("Movido para "+((CATS[val]&&CATS[val].label)||val)+"."); }
+  else{ r.types=[val]; toast("Tipo alterado para "+(TYPES[val]||val)+"."); }
+  r._s=norm([r.title,r.desc,CATS[r.cat]&&CATS[r.cat].label,(r.types||[]).join(" "),r.url].join(" "));
+  if(SERVER){ persist(); } else { const o=overrides[dragSlug]||(overrides[dragSlug]={}); if(kind==="cat")o.cat=val; else o.types=[val]; saveOv(); }
+  buildFilters(); render();
+}
+function setupDrop(bar,kind){
+  const sel=kind==="cat"?".chip.cat[data-cat]":".chip[data-type]";
+  bar.addEventListener("dragover",e=>{
+    if(!dragSlug)return; const chip=e.target.closest(sel); if(!chip)return;
+    e.preventDefault(); try{e.dataTransfer.dropEffect="move";}catch(_){}
+    bar.querySelectorAll(".drop-hover").forEach(x=>{if(x!==chip)x.classList.remove("drop-hover");});
+    chip.classList.add("drop-hover");
+  });
+  bar.addEventListener("dragleave",e=>{const chip=e.target.closest(".chip"); if(chip)chip.classList.remove("drop-hover");});
+  bar.addEventListener("drop",e=>{
+    if(!dragSlug)return; const chip=e.target.closest(sel); if(!chip)return;
+    e.preventDefault(); chip.classList.remove("drop-hover");
+    applyMove(kind, kind==="cat"?chip.dataset.cat:chip.dataset.type);
+  });
+}
+setupDrop(catbar,"cat"); setupDrop(typebar,"type");
+
+// ---------- Adicionar referência (Gemini via servidor /api/analyze) ----------
+const addUrl=document.getElementById("addUrl"),addUrlBtn=document.getElementById("addUrlBtn");
+const addImg=document.getElementById("addImg"),dropZone=document.getElementById("dropZone");
+const addStatus=document.getElementById("addStatus");
+const unlockRow=document.getElementById("unlockRow"),etoken=document.getElementById("etoken"),etokenBtn=document.getElementById("etokenBtn");
+const syncRow=document.getElementById("syncRow"),pullBtn=document.getElementById("pullBtn"),pushBtn=document.getElementById("pushBtn");
+const exportBtn=document.getElementById("exportBtn");
+function gstat(msg,load){addStatus.innerHTML=(load?'<span class="spin"></span>':"")+msg;}
+const CATLIST=Object.entries(CATS).map(([k,v])=>`${k} (${v.label})`).join(", ");
+const GPROMPT=`Você cataloga ferramentas, sites e recursos para um catálogo, em PORTUGUÊS. Produza UM objeto JSON com EXATAMENTE estes campos: "title" (nome curto oficial, ex.: "remove.bg"), "url" (URL oficial https; se for imagem, infira a URL oficial), "cat" (use EXATAMENTE uma destas CHAVES em minúsculo e nada além: ${Object.keys(CATS).join(", ")} — significados: ${CATLIST}), "types" (array só com valores exatos entre "site","repo","skill": github=repo, skill do Claude=skill, caso contrário "site"), "desc" (2 a 3 frases em português, analítico, sobre o que é e para que serve, sem copiar marketing). Responda SOMENTE com o objeto JSON válido, sem markdown e sem texto ao redor.`;
+async function gemini(body){
+  const res=await fetch("/api/analyze",{method:"POST",headers:{"content-type":"application/json",...tokenHdr()},body:JSON.stringify(body)});
+  if(!res.ok){let t="";try{t=(await res.json()).error||"";}catch(_){} throw new Error("HTTP "+res.status+(t?" · "+t:""));}
+  const data=await res.json();
+  const parts=(((data.candidates||[])[0]||{}).content||{}).parts||[];
+  const text=parts.map(p=>p.text).filter(Boolean).join("").trim();
+  if(!text)throw new Error("resposta vazia do modelo");
+  return text;
+}
+// recupera todos os objetos {...} completos de dentro de um trecho (ex.: array truncado)
+function recoverObjects(s){
+  const out=[]; let depth=0,inStr=false,esc=false,st=-1;
+  for(let k=0;k<s.length;k++){const c=s[k];
+    if(inStr){ if(esc)esc=false; else if(c==="\\")esc=true; else if(c==='"')inStr=false; continue; }
+    if(c==='"'){inStr=true;continue;}
+    if(c==="{"){ if(depth===0)st=k; depth++; }
+    else if(c==="}"){ if(depth>0&&--depth===0&&st>=0){ try{out.push(JSON.parse(s.slice(st,k+1)));}catch(_){} st=-1; } }
+  }
+  return out;
+}
+// parseia a resposta do Gemini em uma LISTA de cards. Aceita objeto único, array, {cards:[...]} e recupera de JSON truncado.
+function parseCards(raw){
+  if(typeof raw!=="string")return [];
+  let t=raw.replace(/```(?:json)?/gi,"").trim();
+  let obj=null; try{obj=JSON.parse(t);}catch(_){}
+  if(obj===null){
+    const iO=t.indexOf("{"), iA=t.indexOf("[");
+    const start=(iA>=0&&(iO<0||iA<iO))?iA:iO;
+    if(start<0)return [];
+    const open=t[start], close=open==="["?"]":"}";
+    let depth=0,inStr=false,esc=false,end=-1;
+    for(let k=start;k<t.length;k++){const c=t[k];
+      if(inStr){ if(esc)esc=false; else if(c==="\\")esc=true; else if(c==='"')inStr=false; }
+      else { if(c==='"')inStr=true; else if(c===open)depth++; else if(c===close){ if(--depth===0){end=k;break;} } }
+    }
+    try{ obj=JSON.parse(t.slice(start,end>=0?end+1:undefined)); }
+    catch(_){ return recoverObjects(t.slice(start)); } // truncado → recupera objetos completos
+  }
+  if(Array.isArray(obj))return obj.filter(x=>x&&typeof x==="object");
+  if(obj&&Array.isArray(obj.cards))return obj.cards.filter(x=>x&&typeof x==="object");
+  if(obj&&typeof obj==="object"&&(obj.title||obj.url))return [obj];
+  return [];
+}
+const normCat=c=>CATS[c]?c:"self";
+const normTypes=t=>{const ok=["site","repo","skill"];const arr=(Array.isArray(t)?t:[t]).filter(x=>ok.includes(x));return arr.length?arr:["site"];};
+const cleanUrl=u=>(u||"").replace(/^https?:\/\//i,"").replace(/\/+$/,"").toLowerCase();
+const urlDupe=url=>!!url&&REFS.some(r=>cleanUrl(r.url)===cleanUrl(url)&&cleanUrl(url));
+function makeRef(j,extra){
+  const url=(j.url||(extra&&extra.source)||"").trim();
+  const ref={title:(j.title||url||"Sem título").slice(0,120),url,cat:normCat(j.cat),src:"upload",types:normTypes(j.types),desc:(j.desc||"").slice(0,700),date:new Date().toISOString().slice(0,10),added:true};
+  if(extra){ if(extra.thumb)ref.thumb=extra.thumb; if(extra.source)ref.source=extra.source; }
+  ref._s=norm([ref.title,ref.desc,CATS[ref.cat]&&CATS[ref.cat].label,(ref.types||[]).join(" "),ref.url].join(" "));
+  return ref;
+}
+// prompt do ingest: catalogar múltiplas referências e evitar duplicatas (dedup semântico feito pelo Gemini)
+function ingestPrompt(){
+  const existing=REFS.filter(live).map(r=>`- ${r.title}${r.url?" — "+r.url:""}`).join("\n");
+  return `Você cataloga ferramentas, sites e recursos, em PORTUGUÊS, a partir de mídia de um post de rede social (slides de um carrossel OU o áudio de um vídeo).
+Para CADA referência DISTINTA e catalogável (um site, ferramenta, repositório, recurso ou ideia com nome/link próprio), produza um objeto com EXATAMENTE: "title" (nome curto oficial), "url" (URL oficial https da referência; se não houver, ""), "cat" (uma destas CHAVES em minúsculo: ${Object.keys(CATS).join(", ")} — significados: ${CATLIST}), "types" (array só entre "site","repo","skill"), "desc" (2 a 3 frases analíticas, sobre o que é e pra que serve).
+IGNORE slides/trechos puramente decorativos, de capa/texto, ou sem referência importante — não gere objeto pra eles. Se vários slides tratam da MESMA referência, gere só um objeto.
+NÃO duplique referências que JÁ existem no catálogo abaixo (se for essencialmente uma destas, ignore):
+${existing||"(catálogo vazio)"}
+Responda SOMENTE com um objeto JSON {"cards":[ ... ]} (array, possivelmente vazio), sem markdown e sem texto ao redor.`;
+}
+// cria N cards a partir de uma lista de objetos parseados; dedup por URL, resumo e undo em lote
+function commitCards(cards,extra,label){
+  const fresh=[], dup=[];
+  for(const c of cards){ if(!c||!(c.title||c.url))continue;
+    const u=(c.url||(extra&&extra.source)||"").trim();
+    if(urlDupe(u)){dup.push(c.title||u);continue;}
+    const ref=makeRef(c,extra); REFS.push(ref); if(!SERVER)added.push(ref); fresh.push(ref);
+  }
+  if(!fresh.length){ gstat(dup.length?("Já no catálogo: <b>"+dup.slice(0,3).join(", ")+"</b>"+(dup.length>3?" +"+(dup.length-3):"")+"."):("Nada novo pra catalogar"+(label?" ("+label+")":"")+".")); return 0; }
+  if(SERVER)persist(); else saveAdded();
+  buildFilters();render();
+  gstat("Adicionado(s) <b>"+fresh.length+"</b> card(s)"+(label?" · "+label:"")+(dup.length?" · "+dup.length+" já existia(m)":"")+".");
+  const first=document.getElementById("c-"+slug(fresh[0].title)); if(first){first.scrollIntoView({behavior:"smooth",block:"center"});first.classList.add("flash");setTimeout(()=>first.classList.remove("flash"),1800);}
+  toast(fresh.length+" referência(s) adicionada(s).",()=>{fresh.forEach(ref=>{const k=REFS.indexOf(ref);if(k>=0)REFS.splice(k,1);if(!SERVER){const i=added.indexOf(ref);if(i>=0)added.splice(i,1);}});if(SERVER)persist();else saveAdded();buildFilters();render();gstat("");});
+  return fresh.length;
+}
+function createFromResult(raw,extra){
+  const cards=parseCards(raw);
+  if(!cards.length){console.warn("parseCards vazio:\nraw:",raw);gstat("Não consegui interpretar a resposta do modelo. <span class='mono' style='opacity:.6'>"+String(raw||"").slice(0,90).replace(/</g,"&lt;")+"…</span>");return;}
+  commitCards(cards,extra);
+}
+const SOCIAL=/(^|\.)(instagram\.com|tiktok\.com|twitter\.com|x\.com|youtube\.com|youtu\.be|facebook\.com|fb\.watch|threads\.net|pinterest\.[a-z.]+|reddit\.com|vimeo\.com|linkedin\.com)$/i;
+function isSocial(u){try{return SOCIAL.test(new URL(u).hostname);}catch{return false;}}
+async function analyzeUrl(u){
+  if(!canAdd())return; if(!/^https?:\/\//i.test(u))u="https://"+u;
+  if(isSocial(u))return ingest(u);
+  gstat("Lendo o site com o Gemini…",1);
+  try{const raw=await gemini({contents:[{parts:[{text:GPROMPT+"\n\nURL para analisar (leia o conteúdo do site): "+u}]}],tools:[{url_context:{}}],generationConfig:{temperature:0.3,maxOutputTokens:8192,thinkingConfig:{thinkingBudget:0}}});createFromResult(raw);}
+  catch(e){gstat("Erro: "+e.message);}
+}
+// link social via Cobalt: carrossel (todos os slides) ou vídeo (áudio→transcrição) → vários cards, sem duplicatas.
+async function ingest(u){
+  if(!canAdd())return;
+  gstat("Resolvendo o link (Cobalt) e analisando o conteúdo… pode levar alguns segundos.",1);
+  try{
+    const res=await fetch("/api/ingest",{method:"POST",headers:{"content-type":"application/json",...tokenHdr()},body:JSON.stringify({url:u,prompt:ingestPrompt()})});
+    const j=await res.json().catch(()=>({}));
+    if(!res.ok||!j.ok){gstat("Erro: "+((j&&j.error)||("HTTP "+res.status)));return;}
+    const cards=parseCards(j.raw);
+    if(!cards.length){console.warn("ingest parseCards vazio:\nraw:",j.raw);gstat("Não consegui interpretar a resposta do modelo. <span class='mono' style='opacity:.6'>"+String(j.raw||"").slice(0,90).replace(/</g,"&lt;")+"…</span>");return;}
+    const tipo=j.kind==="carousel"?"carrossel":j.kind==="video"?"vídeo (áudio transcrito)":"link";
+    commitCards(cards,{source:u},tipo);
+  }catch(e){gstat("Erro: "+e.message);}
+}
+async function analyzeImage(file){
+  if(!canAdd())return; if(!file||!/^image\//.test(file.type||"")){gstat("Selecione um arquivo de imagem.");return;}
+  gstat("Analisando a imagem com o Gemini…",1);
+  try{
+    const b64=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(",")[1]);fr.onerror=rej;fr.readAsDataURL(file);});
+    const raw=await gemini({contents:[{parts:[{inline_data:{mime_type:file.type,data:b64}},{text:GPROMPT+"\n\nA imagem acima é um print de referência. Se houver UMA ferramenta/site, catalogue-a. Se houver VÁRIAS (ex.: print de uma lista/página com muitos), catalogue TODAS as distintas. Responda com um ARRAY JSON de objetos [{...}] (ou um único objeto se for só uma)."}]}],generationConfig:{temperature:0.3,maxOutputTokens:8192,responseMimeType:"application/json",thinkingConfig:{thinkingBudget:0}}});
+    createFromResult(raw);
+  }catch(e){gstat("Erro: "+e.message);}
+}
+addUrlBtn.onclick=()=>{const u=addUrl.value.trim();if(u){analyzeUrl(u);addUrl.value="";}};
+addUrl.addEventListener("keydown",e=>{if(e.key==="Enter"){const u=addUrl.value.trim();if(u){analyzeUrl(u);addUrl.value="";}}});
+addImg.addEventListener("change",()=>{if(addImg.files[0]){analyzeImage(addImg.files[0]);addImg.value="";}});
+["dragover","dragenter"].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();dropZone.classList.add("over");}));
+["dragleave","dragend"].forEach(ev=>dropZone.addEventListener(ev,e=>{dropZone.classList.remove("over");}));
+dropZone.addEventListener("drop",e=>{e.preventDefault();e.stopPropagation();dropZone.classList.remove("over");const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)analyzeImage(f);});
+// ---------- desbloqueio de edição no deploy (senha → /api/auth) ----------
+async function tryUnlock(tok){ try{const res=await fetch("/api/auth",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({token:tok})});return !!(await res.json()).ok;}catch(_){return false;} }
+etokenBtn.onclick=async()=>{ const v=etoken.value.trim(); if(!v)return; gstat("Verificando…",1);
+  if(await tryUnlock(v)){ EDIT_TOKEN=v; unlocked=true; sessionStorage.setItem("edit-token",v); syncAdder(); buildFilters(); render(); gstat("Edição desbloqueada."); }
+  else gstat("Senha incorreta."); };
+etoken.addEventListener("keydown",e=>{if(e.key==="Enter")etokenBtn.onclick();});
+
+// ---------- sync local ↔ deploy (só no servidor local) ----------
+pullBtn.onclick=async()=>{
+  if(!confirm("Puxar os dados do deploy e sobrescrever o refs-data.js local?"))return;
+  gstat("Puxando do deploy…",1);
+  try{const r=await fetch("/api/pull",{method:"POST"});const j=await r.json();
+    if(j.ok){gstat("Puxado: "+j.count+" refs. Recarregando…");setTimeout(()=>location.reload(),700);}
+    else gstat("Erro: "+j.error);}catch(e){gstat("Erro: "+e.message);}
+};
+pushBtn.onclick=async()=>{
+  let tok=localStorage.getItem("sync-token")||"";
+  if(!tok){tok=(prompt("Senha de edição do deploy (EDIT_TOKEN):")||"").trim(); if(!tok)return; localStorage.setItem("sync-token",tok);}
+  if(!confirm("Enviar o refs-data.js local para o deploy (sobrescreve o que está online)?"))return;
+  gstat("Enviando pro deploy…",1);
+  try{const r=await fetch("/api/push",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({token:tok})});const j=await r.json().catch(()=>({}));
+    if(r.ok&&j.ok){gstat("Enviado ao deploy: "+(j.count||"?")+" refs.");}
+    else if(r.status===401){localStorage.removeItem("sync-token");gstat("Senha incorreta — clique de novo pra tentar.");}
+    else gstat("Erro: "+(j.error||("HTTP "+r.status)));}
+  catch(e){gstat("Erro: "+e.message);}
+};
+
+// ---------- Exportar (só no modo file://) ----------
+function exportData(){
+  const out=buildData();
+  const js="/* Gerado pela exportação do catálogo — substitui refs-data.js. */\nwindow.REFS_DATA = "+JSON.stringify(out,null,2)+";\n";
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([js],{type:"text/javascript"})); a.download="refs-data.js";
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  gstat(`refs-data.js baixado (${out.refs.length} refs). Substitua o arquivo e recarregue. <a id="clrLocal" style="text-decoration:underline;cursor:pointer">limpar alterações locais</a>`);
+  const cl=document.getElementById("clrLocal"); if(cl)cl.onclick=()=>{["refs-deleted","refs-overrides","refs-added"].forEach(k=>localStorage.removeItem(k));location.reload();};
+}
+exportBtn.onclick=exportData;
+
+// visibilidade do painel (o .adder começa oculto no CSS → sem flash)
+function syncAdder(){
+  const ad=document.querySelector(".adder"), row=document.querySelector(".adder-row"), sub=document.querySelector(".adder-sub");
+  exportBtn.style.display = FILE ? "" : "none";
+  if(FILE){ ad.style.display="none"; return; }
+  if(DEPLOY && !healthKnown){ ad.style.display="none"; return; }   // aguarda health (evita flash no espelho)
+  if(READONLY){ ad.style.display="none"; return; }   // espelho: painel some por completo
+  ad.style.display="block";
+  syncRow.style.display = LOCALSRV ? "flex" : "none";
+  if(canAdd()){ row.style.display="flex"; unlockRow.style.display="none"; if(sub)sub.textContent="imagem ou URL — o Gemini lê, categoriza e salva o card"; }
+  else{ row.style.display="none"; unlockRow.style.display="flex"; if(sub)sub.textContent="site publicado — desbloqueie com a senha para editar"; }
+}
+syncAdder();
+// no deploy, consulta o modo (espelho/edição) antes de revelar o painel de edição
+if(DEPLOY){ fetch("/api/health").then(r=>r.json()).then(h=>{ READONLY=!!h.readOnly; healthKnown=true; syncAdder(); if(READONLY)render(); }).catch(()=>{ healthKnown=true; syncAdder(); }); }
+
+buildFilters();render();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "referencias-catalog",
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
+  "description": "Catálogo de referências — site estático + servidor Node sem framework (auto-save, adição por IA, edição com senha no deploy, modo espelho read-only).",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=20.12"
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.2.0"
+  }
+}

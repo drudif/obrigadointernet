@@ -1,0 +1,13 @@
+# segredos — NUNCA commitar
+gemini-config.js
+.env
+.env.*
+!.env.example
+
+# dependências
+/node_modules
+
+# temporários / sistema
+.refs-data.tmp.js
+.DS_Store
+npm-debug.log*
