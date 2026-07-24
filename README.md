@@ -1,125 +1,213 @@
+<p align="center">
+  <img src="docs/hero.png" alt="Catálogo de Referências" width="100%">
+</p>
+
 # Catálogo de Referências
 
-Um catálogo pessoal de **ferramentas, sites e recursos** — cards com descrição analítica, categorias coloridas, busca e filtros. Você adiciona referências colando uma **URL**, soltando um **print**, ou (opcionalmente) um **link de rede social** — uma **IA (Google Gemini)** lê o conteúdo, categoriza e cria o card sozinha.
+Um **catálogo pessoal de ferramentas, sites e recursos** — cards com descrição, categorias coloridas, busca e filtros. Você adiciona referências colando uma **URL**, soltando um **print**, ou (opcional) um **link de rede social**: uma **IA (Google Gemini)** lê o conteúdo, categoriza e cria o card sozinha.
 
-Sem framework, sem build: um `index.html` estático + um servidor Node de ~1 arquivo (`server.mjs`). Roda local com duplo-clique e publica em qualquer host Node (Railway, Render, Fly, VPS…).
+Sem framework e sem "build": um `index.html` estático + um servidor simples (`server.mjs`). Publica em minutos, mesmo **sem saber programar**.
 
----
-
-## ✨ Features
-
-- **Cards data-driven** a partir de um único `refs-data.js` (`window.REFS_DATA`).
-- **9 categorias** coloridas (IA, Design, Tipografia, Assets, Inspo, Audiovisual, Produtividade/Self-hosted, Safety, Cultura) e **3 tipos** (Site, Repo, Skill).
-- **Busca** instantânea + **filtros** por categoria (clique = única; shift = somar) e por tipo.
-- **Adição por IA (Gemini):**
-  - **URL** → lê o site (via `url_context`) e cria o card.
-  - **Imagem/print** → analisa a imagem; se o print tiver **várias** ferramentas, cria **vários** cards.
-  - **Link de rede social** (opcional, requer Cobalt) → **carrossel** vira N cards (um por slide/referência) e **vídeo** tem os **frames + áudio** lidos pela IA (texto na tela + fala).
-- **Dedup**: evita duplicar por URL; no ingest social a IA também deduplica por conteúdo.
-- **Selinho "instalada"** para marcar itens especiais (flag `installed`).
-- **Prints da home** (toggle): thumbnail do site gerada on-the-fly (mShots), sem armazenar nada.
-- **Editar direto na interface**: deletar card, **arrastar** card para outra categoria/tipo (recategoriza).
-- **Persistência automática** no servidor local; no deploy, edição protegida por **senha**.
-- **Modo espelho read-only**: publique uma cópia pública que espelha outro deploy em tempo real, sem nenhuma opção de edição.
-- **Export**: baixa o `refs-data.js` com todas as alterações aplicadas (modo arquivo).
+> **Este guia é para nível ZERO.** Se você nunca publicou nada, siga a **Parte 1** clicando exatamente onde indicado. Não precisa instalar nada no seu computador.
 
 ---
 
-## 🚀 Começando (local)
+## Índice
 
-Requisitos: **Node.js 20.12+**.
-
-```bash
-npm install          # instala a única dependência (ffmpeg-static, usada só p/ vídeo)
-npm start            # sobe em http://localhost:4177 e abre o navegador
-```
-
-No macOS você também pode dar **duplo-clique em `start.command`**.
-
-Rodando local, a edição é **livre** (sem senha) e tudo que você adiciona/edita é **salvo automaticamente** no `refs-data.js`. Para adicionar por IA, configure a `GEMINI_API_KEY` (veja abaixo).
-
-> Também dá para abrir o `index.html` direto no navegador (modo `file://`): funciona como catálogo, guarda alterações no `localStorage` e você exporta o `refs-data.js` pelo botão **Exportar**. (Nesse modo não há IA nem auto-save.)
-
----
-
-## 🧠 Adicionando referências
-
-O painel **"Adicionar referência"** aceita:
-
-| Entrada | O que acontece | Precisa de |
-|---|---|---|
-| **URL** de um site/repo | Gemini lê a página e cria o card | `GEMINI_API_KEY` |
-| **Imagem / print** | Gemini identifica a(s) ferramenta(s) do print | `GEMINI_API_KEY` |
-| **Link social** (Instagram, TikTok, YouTube, LinkedIn…) | Carrossel → N cards; vídeo → frames+áudio lidos pela IA | `GEMINI_API_KEY` + `COBALT_API` |
-
-A chave do Gemini fica **só no servidor** (proxy em `/api/analyze`), nunca no navegador.
+- [O que dá pra fazer](#o-que-dá-pra-fazer)
+- [Parte 1 — Publicar o SEU catálogo (do zero)](#parte-1--publicar-o-seu-catálogo-do-zero)
+- [Parte 2 — Ligar a IA (adicionar por URL/print)](#parte-2--ligar-a-ia-adicionar-por-urlprint)
+- [Parte 3 — Trocar ou atualizar as chaves depois](#parte-3--trocar-ou-atualizar-as-chaves-depois)
+- [Parte 4 — Publicar um espelho público (somente leitura)](#parte-4--publicar-um-espelho-público-somente-leitura)
+- [Parte 5 — (Avançado) Links de rede social com o Cobalt](#parte-5--avançado-links-de-rede-social-com-o-cobalt)
+- [Rodar no seu computador (opcional)](#rodar-no-seu-computador-opcional)
+- [Personalizar (categorias, cores, título)](#personalizar-categorias-cores-título)
+- [Modelo de dados](#modelo-de-dados)
+- [Todas as variáveis de ambiente](#todas-as-variáveis-de-ambiente)
+- [Perguntas frequentes](#perguntas-frequentes)
 
 ---
 
-## ⚙️ Variáveis de ambiente
+## O que dá pra fazer
 
-Copie `.env.example` para `.env` (local) ou configure no seu host. **Todas são opcionais.**
+- **Catalogar** links em **9 categorias** (IA, Design, Tipografia, Assets, Inspo, Audiovisual, Produtividade/Self-hosted, Safety, Cultura) e **3 tipos** (Site, Repo, Skill).
+- **Buscar** e **filtrar** por categoria (clique = uma; `Shift`+clique = somar) e por tipo.
+- **Adicionar por IA**: cole uma **URL**, solte um **print** (a IA identifica até várias ferramentas de uma vez) ou um **link social** (carrossel/vídeo).
+- **Editar na interface**: apagar cards e **arrastar** um card para outra categoria.
+- **Prints da home** dos sites (liga/desliga), sem armazenar imagens.
+- **Selinho "instalada"** para destacar itens especiais.
+- **Espelho público read-only** que reflete o seu catálogo ao vivo.
 
-| Variável | Para quê |
-|---|---|
-| `EDIT_TOKEN` | Senha de edição no **deploy**. Sem ela, o site publicado é **somente-leitura**. |
-| `GEMINI_API_KEY` | Adicionar referências por URL/imagem/social. ([obter chave](https://aistudio.google.com/apikey)) |
-| `COBALT_API` | Instância self-hosted do [Cobalt](https://github.com/imputnet/cobalt) para links de rede social. |
-| `COBALT_KEY` | Chave da sua instância Cobalt (se exigir auth). |
-| `MIRROR_URL` | Liga o **modo espelho**: serve os dados desse deploy (read-only automático). |
-| `READ_ONLY` | `1` força somente-leitura sem espelhar. |
-| `DEPLOY_URL` | URL do seu deploy, para o **sync** local↔deploy (botões ↑/↓). |
-| `DATA_DIR` | Diretório dos dados. No deploy, aponte para um **Volume** (ex.: `/data`) para persistir. |
-| `PORT` | Definido pela plataforma; local usa `4177`. |
+<p align="center">
+  <img src="docs/categories.png" alt="Grade de cards com selinho de skill instalada" width="100%">
+</p>
 
 ---
 
-## ☁️ Deploy no Railway (passo a passo)
+## Parte 1 — Publicar o SEU catálogo (do zero)
 
-1. Faça um **fork/clone** deste repo no seu GitHub.
-2. No [Railway](https://railway.app): **New Project → Deploy from GitHub repo** e escolha o repo.
-3. Em **Variables**, adicione o que for usar (no mínimo `EDIT_TOKEN` para poder editar; `GEMINI_API_KEY` para adicionar por IA).
-4. (Recomendado) **Persistência**: crie um **Volume** montado em `/data` e defina `DATA_DIR=/data`. Assim o `refs-data.js` sobrevive a redeploys (o repo serve como *seed* inicial).
-5. Em **Settings → Networking**, gere um **domínio público**.
-6. Pronto. O site publicado é **read-only** até alguém desbloquear com a `EDIT_TOKEN`.
+Você vai usar dois sites gratuitos: **GitHub** (guarda o código) e **Railway** (deixa o site no ar). Leva ~10 minutos.
 
-> **Build**: usa Nixpacks (autodetecta Node). A dependência `ffmpeg-static` traz o binário do ffmpeg (usado só no ingest de vídeo), sem configuração extra.
+> 💡 O Railway costuma pedir um cartão e cobra a partir de ~US$5/mês depois do crédito inicial de teste. É o custo de manter o site no ar 24h. Dá pra pausar/apagar quando quiser.
+
+### Passo 1 — Copiar o projeto para a sua conta do GitHub
+
+1. Crie uma conta gratuita em **[github.com](https://github.com)** (se ainda não tiver).
+2. Nesta página do projeto, clique no botão verde **"Use this template" → "Create a new repository"** (ou em **"Fork"**).
+3. Dê um nome (ex.: `meu-catalogo`) e clique **"Create repository"**.
+
+Pronto — agora existe uma **cópia sua** do código no seu GitHub.
+
+### Passo 2 — Criar conta no Railway
+
+1. Vá em **[railway.app](https://railway.app)** e clique **"Login" → "Login with GitHub"**.
+2. Autorize o Railway a acessar seu GitHub.
+
+### Passo 3 — Publicar
+
+1. No Railway, clique **"New Project"**.
+2. Escolha **"Deploy from GitHub repo"**.
+3. Selecione o repositório que você criou no Passo 1.
+4. O Railway vai **construir e publicar** sozinho (aguarde uns 2–3 minutos até aparecer "Success").
+
+Seu site já está no ar — mas por enquanto é **somente leitura** (ninguém consegue editar). Vamos ligar a edição e gerar o link.
+
+### Passo 4 — Definir a senha de edição
+
+1. No projeto do Railway, clique no serviço (o quadradinho com o nome do repo) → aba **"Variables"**.
+2. Clique **"New Variable"** e crie:
+   - **Nome:** `EDIT_TOKEN`
+   - **Valor:** uma senha sua (ex.: `minhasenha123`)
+3. Salve. O site vai **republicar** sozinho.
+
+> Essa é a senha que você vai digitar no site para desbloquear a edição. Sem ela, o site fica só de leitura para todo mundo. **Guarde bem.**
+
+### Passo 5 — Gerar o link público
+
+1. Ainda no serviço, vá em **"Settings" → "Networking"**.
+2. Clique **"Generate Domain"**.
+3. O Railway cria um endereço tipo `https://seu-projeto.up.railway.app`. **Esse é o link do seu catálogo.**
+
+### Passo 6 (recomendado) — Não perder os dados
+
+Por padrão, cada vez que o Railway republica, o catálogo poderia voltar ao estado do código. Para **guardar suas adições para sempre**, crie um "Volume":
+
+1. No serviço → **"Settings"** (ou clique com o botão direito no serviço) → **"Add Volume"**.
+2. Em **Mount path**, coloque: `/data`
+3. Vá em **"Variables"** e adicione: `DATA_DIR` = `/data`
+4. Salve. Pronto — agora tudo que você adicionar fica guardado.
+
+✅ **Seu catálogo está no ar.** Abra o link, clique para **desbloquear** e digite a `EDIT_TOKEN`.
 
 ---
 
-## 🪞 Modo espelho read-only (publicar uma cópia pública)
+## Parte 2 — Ligar a IA (adicionar por URL/print)
 
-Ideal para manter **um deploy privado que você edita** e **um deploy público só de leitura** que reflete o primeiro em tempo real.
+Para a IA ler links e prints e criar os cards, você precisa de uma **chave do Google Gemini** (tem plano gratuito).
 
-1. Suba **um segundo serviço** (mesmo repo).
-2. Nele, defina **`MIRROR_URL`** = a URL do seu deploy original (ex.: `https://meu-catalogo.up.railway.app`). Não coloque `EDIT_TOKEN` nem chaves.
-3. Gere um domínio público para ele.
+### Como pegar a chave do Gemini (grátis)
+
+1. Acesse **[aistudio.google.com/apikey](https://aistudio.google.com/apikey)** e faça login com sua conta Google.
+2. Clique **"Create API key"** (Criar chave de API).
+3. **Copie** a chave gerada (uma sequência longa de letras/números).
+
+### Colar a chave no Railway
+
+1. No Railway → seu serviço → **"Variables" → "New Variable"**:
+   - **Nome:** `GEMINI_API_KEY`
+   - **Valor:** cole a chave que você copiou
+2. Salve (o site republica sozinho).
+
+### Como usar
+
+1. Abra o seu site e **desbloqueie** com a `EDIT_TOKEN`.
+2. No painel **"Adicionar referência"**:
+   - **Cole uma URL** e clique "Analisar URL" → a IA lê o site e cria o card.
+   - **Solte um print** (ou clique para escolher) → a IA identifica a(s) ferramenta(s).
+3. O card aparece na categoria certa. Você pode **arrastar** para outra categoria ou **apagar** (×).
+
+> A chave fica **só no servidor** — nunca aparece para quem visita o site.
+
+---
+
+## Parte 3 — Trocar ou atualizar as chaves depois
+
+Todas as chaves e configurações ficam no mesmo lugar: **Railway → seu serviço → aba "Variables"**.
+
+- **Trocar a chave do Gemini** (nova conta, chave expirou): clique na variável `GEMINI_API_KEY`, apague o valor antigo, cole o novo, salve.
+- **Mudar a senha de edição**: edite `EDIT_TOKEN`.
+- **Remover uma função**: apague a variável correspondente (o site volta a funcionar sem ela).
+- Toda alteração de variável **republica o site automaticamente** em ~1 minuto.
+
+> Nunca coloque chaves dentro do código nem as compartilhe. Só no painel de Variables.
+
+---
+
+## Parte 4 — Publicar um espelho público (somente leitura)
+
+Cenário: você quer **um site privado que só você edita** e **um site público que qualquer um vê**, mas sem poder editar — e que reflete o seu automaticamente.
+
+1. No **mesmo projeto** do Railway, clique **"New" → "GitHub Repo"** e escolha **o mesmo repositório** de novo (cria um segundo serviço).
+2. Nesse novo serviço → **"Variables"**, adicione **apenas**:
+   - **Nome:** `MIRROR_URL`
+   - **Valor:** o link do seu catálogo original (ex.: `https://seu-projeto.up.railway.app`)
+   - *(Não coloque `EDIT_TOKEN` nem `GEMINI_API_KEY` aqui.)*
+3. Em **"Settings" → "Networking" → "Generate Domain"** para criar o link público do espelho.
 
 O espelho:
-- serve o `refs-data.js` do original (cache de 30s → sempre atualizado);
-- **esconde** o painel de adição, o campo de senha, os botões de deletar e o arrastar;
-- bloqueia todos os endpoints de escrita.
-
-`READ_ONLY=1` (sem `MIRROR_URL`) faz o mesmo bloqueio, mas usando os dados do próprio serviço.
+- mostra sempre os dados do original (atualiza sozinho);
+- **não tem** painel de adição, senha, botão de apagar nem arrastar;
+- deixa os **prints dos sites sempre ligados**.
 
 ---
 
-## 🎬 Cobalt (opcional — para links de rede social)
+## Parte 5 — (Avançado) Links de rede social com o Cobalt
 
-Instagram, TikTok e cia. ficam atrás de login e o `url_context` do Gemini não os lê. O [Cobalt](https://github.com/imputnet/cobalt) resolve o post e devolve a mídia; o servidor então:
-- **carrossel** → manda todos os slides para a IA (um card por referência distinta);
-- **vídeo** → extrai **frames** (texto na tela) + **áudio** (fala) com ffmpeg e manda para a IA. **Nada é armazenado.**
+Instagram, TikTok e YouTube ficam atrás de login, então a IA sozinha não os lê. Com uma instância do **[Cobalt](https://github.com/imputnet/cobalt)** o app consegue: **carrossel** → um card por referência; **vídeo** → lê os frames (texto na tela) + o áudio.
 
-Setup rápido (Railway, rede privada — sem expor o Cobalt à internet):
-1. **New Service → Docker Image**: `ghcr.io/imputnet/cobalt:11`.
-2. Variables do Cobalt: `API_URL=http://cobalt.railway.internal:9000/`, `API_PORT=9000`, `API_LISTEN_ADDRESS=::`.
-3. No serviço do catálogo, defina `COBALT_API=http://cobalt.railway.internal:9000`.
+Setup no Railway (rede interna, sem expor o Cobalt à internet):
 
-(Fora do Railway, aponte `COBALT_API` para qualquer instância Cobalt acessível.)
+1. No projeto → **"New" → "Docker Image"** → `ghcr.io/imputnet/cobalt:11`.
+2. Nesse serviço Cobalt, **Variables**: `API_URL` = `http://cobalt.railway.internal:9000/`, `API_PORT` = `9000`, `API_LISTEN_ADDRESS` = `::`.
+3. No serviço do **catálogo**, adicione: `COBALT_API` = `http://cobalt.railway.internal:9000`.
+
+Agora é só colar um link de rede social no painel de adicionar.
 
 ---
 
-## 🗂️ Modelo de dados (`refs-data.js`)
+## Rodar no seu computador (opcional)
+
+Para quem quer testar localmente (edição livre, sem senha):
+
+1. Instale o **[Node.js](https://nodejs.org)** (versão 20 ou maior).
+2. Baixe o projeto (botão verde **"Code" → "Download ZIP"**) e descompacte.
+3. Abra o Terminal na pasta e rode:
+   ```bash
+   npm install
+   npm start
+   ```
+4. Abre em `http://localhost:4177`. No macOS dá pra dar **duplo-clique em `start.command`**.
+5. Para a IA local, crie um arquivo `.env` (copie de `.env.example`) e coloque sua `GEMINI_API_KEY`.
+
+> Também dá para só abrir o `index.html` no navegador (sem servidor): funciona como catálogo, guarda no navegador e você exporta o arquivo pelo botão **Exportar**.
+
+---
+
+## Personalizar (categorias, cores, título)
+
+Tudo vive no `index.html` (é só abrir num editor de texto):
+
+- **Categorias**: procure por `const CATS` e edite os rótulos. As cores são as variáveis `--ai`, `--design`, etc. no topo (`:root`).
+- **Cores e fontes gerais**: variáveis CSS no `:root` (`--paper`, `--ink`, `--serif`, `--sans`…).
+- **Título/cabeçalho**: o `<h1>` no topo do arquivo. Troque pelo texto ou marca que quiser.
+
+Depois de editar, salve, faça **commit** no GitHub (ou substitua o arquivo) e o Railway republica.
+
+---
+
+## Modelo de dados
+
+Os cards ficam em `refs-data.js`:
 
 ```js
 window.REFS_DATA = {
@@ -127,64 +215,60 @@ window.REFS_DATA = {
   sources: { videos: 0, images: 0 },
   refs: [
     {
-      title: "remove.bg",           // nome curto
-      url: "https://remove.bg",     // link oficial ("" se não houver)
-      cat: "assets",                // uma das chaves de categoria (abaixo)
-      types: ["site"],              // "site" | "repo" | "skill"
-      desc: "2–3 frases analíticas sobre o que é e pra que serve.",
-      date: "2026-01-01",           // data de entrada
+      title: "remove.bg",             // nome curto
+      url: "https://remove.bg",       // link ("" se não houver)
+      cat: "assets",                  // categoria (chave)
+      types: ["site"],                // "site" | "repo" | "skill"
+      desc: "2–3 frases sobre o que é e pra que serve.",
+      date: "2026-01-01",
       // opcionais:
-      installed: true,              // mostra o selinho "instalada"
+      installed: true,                // mostra o selinho "instalada"
       thumb: "https://…/preview.jpg", // miniatura fixa
-      items: ["bullet 1", "bullet 2"] // vira lista no card
+      items: ["item 1", "item 2"]     // vira lista no card
     }
   ]
 };
 ```
 
-**Categorias** (chave → rótulo, editável em `index.html`): `ai` IA/Agentes · `design` Design/UI · `type` Tipografia · `assets` Assets · `inspo` Inspo · `av` Audiovisual · `self` Produtividade/Self-hosted · `sec` Safety · `culture` Cultura.
+Categorias (chave → rótulo): `ai` IA/Agentes · `design` Design/UI · `type` Tipografia · `assets` Assets · `inspo` Inspo · `av` Audiovisual · `self` Produtividade/Self-hosted · `sec` Safety · `culture` Cultura.
 
 ---
 
-## 🎨 Customizando
+## Todas as variáveis de ambiente
 
-Tudo vive no `index.html` (CSS + JS inline, sem build):
+Todas são **opcionais** (veja o arquivo `.env.example`).
 
-- **Categorias**: edite o objeto `CATS` (rótulo + cor via variável CSS `--<chave>` no `:root`).
-- **Tipos**: objeto `TYPES` / `TTAG`.
-- **Cores e fontes**: variáveis CSS no `:root` (`--paper`, `--ink`, `--serif`, `--sans`, cores de categoria…).
-- **Título/cabeçalho**: o `<h1>` no topo. (Neste repo ele é um SVG; troque pelo texto/marca que quiser.)
-- **Prints da home**: o toggle usa o serviço gratuito mShots; a URL é montada em `shotUrl()`.
-
----
-
-## 💾 Edição e persistência
-
-| Contexto | Edição | Salva onde |
-|---|---|---|
-| `file://` (abrir o HTML) | livre | `localStorage` (+ botão **Exportar** o `refs-data.js`) |
-| Servidor **local** (`npm start`) | livre | grava direto no `refs-data.js` (auto-save) |
-| **Deploy** | só com `EDIT_TOKEN` | grava no `DATA_DIR`/Volume |
-
-No local há também **sync**: **↓ Puxar do deploy** e **↑ Enviar pro deploy** (usa `DEPLOY_URL` + a senha de edição) para reconciliar os dois.
+| Variável | Para quê |
+|---|---|
+| `EDIT_TOKEN` | Senha de edição no site publicado. Sem ela = somente leitura. |
+| `GEMINI_API_KEY` | Adicionar por URL/print/social. ([obter](https://aistudio.google.com/apikey)) |
+| `COBALT_API` | Instância Cobalt para links de rede social. |
+| `COBALT_KEY` | Chave da sua instância Cobalt (se exigir). |
+| `MIRROR_URL` | Liga o modo espelho (lê os dados desse link, read-only). |
+| `READ_ONLY` | `1` força somente leitura sem espelhar. |
+| `DEPLOY_URL` | URL do deploy, para o sync local↔deploy. |
+| `DATA_DIR` | Pasta dos dados (aponte para o Volume, ex.: `/data`). |
+| `PORT` | Definido pela plataforma; local usa `4177`. |
 
 ---
 
-## 🔒 Segurança
+## Perguntas frequentes
 
-- Chaves (`GEMINI_API_KEY`, `COBALT_KEY`) ficam **no servidor**; o cliente nunca as vê.
-- `.env` e `gemini-config.js` estão no `.gitignore` — **nunca** commite segredos.
-- O deploy é read-only por padrão: sem `EDIT_TOKEN`, ninguém edita.
-- O ingest de vídeo **não armazena** mídia (extrai frames/áudio, analisa e descarta).
+**Preciso saber programar?** Não para publicar (Parte 1). Só para personalizar cores/categorias, e ainda assim é editar texto.
+
+**Quem visita consegue editar?** Não. A edição só aparece para quem digita a `EDIT_TOKEN`.
+
+**A chave da IA fica exposta?** Não — fica no servidor. O navegador nunca a vê.
+
+**O ingest de vídeo guarda a mídia?** Não. Ele extrai frames/áudio, a IA analisa e descarta.
+
+**Tem custo?** O GitHub e o Gemini têm plano gratuito. O Railway cobra para manter o site no ar (a partir de ~US$5/mês).
 
 ---
 
-## 🧱 Stack
+## Stack
 
-- Frontend: **HTML/CSS/JS puro** num único arquivo, data-driven.
-- Backend: **Node.js** (`node:http`), sem framework. Uma dependência (`ffmpeg-static`).
-- IA: **Google Gemini** (`gemini-2.5-flash`) via proxy no servidor.
-- Opcional: **Cobalt** (mídia social) + **ffmpeg** (frames/áudio de vídeo).
+HTML/CSS/JS puro (um arquivo, sem build) + Node.js sem framework (uma dependência: `ffmpeg-static`) + Google Gemini via proxy. Cobalt e ffmpeg são opcionais (mídia social).
 
 ## Licença
 

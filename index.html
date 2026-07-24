@@ -669,7 +669,12 @@ function syncAdder(){
 }
 syncAdder();
 // no deploy, consulta o modo (espelho/edição) antes de revelar o painel de edição
-if(DEPLOY){ fetch("/api/health").then(r=>r.json()).then(h=>{ READONLY=!!h.readOnly; healthKnown=true; syncAdder(); if(READONLY)render(); }).catch(()=>{ healthKnown=true; syncAdder(); }); }
+function applyReadonly(){
+  showShots=true;                                                    // espelho: prints sempre ativos
+  if(shotsToggle)shotsToggle.style.display="none";                   // sem toggle
+  document.querySelectorAll(".hint").forEach(el=>el.style.display="none"); // sem eyebrows de instrução
+}
+if(DEPLOY){ fetch("/api/health").then(r=>r.json()).then(h=>{ READONLY=!!h.readOnly; healthKnown=true; if(READONLY)applyReadonly(); syncAdder(); render(); }).catch(()=>{ healthKnown=true; syncAdder(); }); }
 
 buildFilters();render();
 </script>
