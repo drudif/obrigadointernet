@@ -44,7 +44,8 @@ const COBALT_KEY = process.env.COBALT_KEY || "";
 // espelho somente-leitura: lê os dados de outro deploy (MIRROR_URL) e bloqueia toda edição.
 const MIRROR_URL = (process.env.MIRROR_URL || "").replace(/\/+$/, "");
 const READ_ONLY = process.env.READ_ONLY === "1" || !!MIRROR_URL;
-const GMODEL = "gemini-2.5-flash";
+const GMODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";     // configurável (chaves novas não acessam 2.5-flash)
+const GEMINI_THINKING = process.env.GEMINI_THINKING !== "0";       // alguns modelos (flash-latest) não aceitam thinkingBudget:0
 const DATA_FILE = path.join(DATA_DIR, "refs-data.js");
 
 // seed do volume: na primeira vez copia o refs-data.js do repo para o volume
@@ -192,7 +193,9 @@ async function geminiUpload(buf, mime, displayName = "media") {
 }
 // uma chamada multimodal ao Gemini que devolve {cards:[...]}. Thinking desligado + retry em erro transitório.
 async function geminiCards(parts) {
-  const body = { contents: [{ parts }], generationConfig: { temperature: 0.3, maxOutputTokens: 8192, responseMimeType: "application/json", thinkingConfig: { thinkingBudget: 0 } } };
+  const gc = { temperature: 0.3, maxOutputTokens: 8192, responseMimeType: "application/json" };
+  if (GEMINI_THINKING) gc.thinkingConfig = { thinkingBudget: 0 };   // só onde o modelo aceita
+  const body = { contents: [{ parts }], generationConfig: gc };
   const TRANSIENT = new Set([429, 500, 502, 503, 504]);
   let lastErr = "";
   for (let attempt = 0; attempt < 5; attempt++) {
