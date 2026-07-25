@@ -91,6 +91,7 @@ function json(res, code, obj) { res.writeHead(code, { "content-type": "applicati
 
 // rate limit por IP p/ endpoints públicos (busca semântica)
 const rlHits = new Map();
+const semCache = new Map(); // cache de respostas da busca semântica (pergunta -> {ts, raw})
 function rateOk(ip, max = 12, winMs = 5 * 60 * 1000) {
   const now = Date.now();
   const arr = (rlHits.get(ip) || []).filter((t) => now - t < winMs);
@@ -283,15 +284,22 @@ const server = http.createServer(async (req, res) => {
         } catch { return json(res, 502, { ok: false, error: "upstream indisponível" }); }
       }
       if (!GEMINI_API_KEY) return json(res, 400, { ok: false, error: "busca semântica indisponível" });
-      let catText = "";
+      let catText = "", nRefs = 0;
       try {
         const src = MIRROR_URL ? await getMirrorData() : fs.readFileSync(DATA_FILE, "utf8");
         const w = {}; new Function("window", src)(w);
         const refs = (w.REFS_DATA && w.REFS_DATA.refs) || [];
+        nRefs = refs.length;
         catText = refs.map((r) => `"${String(r.title || "").replace(/"/g, "'")}" [${r.cat}${(r.types || []).length ? "/" + r.types.join(",") : ""}] ${String(r.desc || "").slice(0, 220)}${r.url ? " (" + r.url + ")" : ""}`).join("\n");
       } catch { return json(res, 500, { ok: false, error: "catálogo indisponível" }); }
+      // cache: pergunta normalizada + tamanho do catálogo (muda se cards forem add/removidos). TTL 6h.
+      const ckey = q.toLowerCase().replace(/\s+/g, " ").trim() + "|" + nRefs;
+      const hit = semCache.get(ckey);
+      if (hit && Date.now() - hit.ts < 6 * 3600 * 1000) return json(res, 200, { ok: true, raw: hit.raw, cached: true });
       const prompt = `Você é um assistente de busca semântica de um catálogo de ferramentas, sites e recursos, em PORTUGUÊS. Responda à pergunta de forma útil e direta (2 a 5 frases), recomendando os itens mais adequados pelo NOME, com base APENAS no catálogo abaixo. Depois liste os títulos EXATOS dos itens relevantes, do mais para o menos relevante (máx. 12). Se nada servir, diga isso e devolva matches vazio.\n\nCATÁLOGO:\n${catText}\n\nPERGUNTA: ${q}\n\nResponda SOMENTE em JSON: {"answer":"...","matches":["título exato",...]}`;
       let raw; try { raw = await geminiCards([{ text: prompt }]); } catch (e) { return json(res, 502, { ok: false, error: e.message }); }
+      semCache.set(ckey, { ts: Date.now(), raw });
+      if (semCache.size > 500) semCache.delete(semCache.keys().next().value); // limita o cache
       return json(res, 200, { ok: true, raw });
     }
     // ---- ingerir link social via Cobalt: carrossel (todos os slides) ou vídeo (áudio→transcrição).
