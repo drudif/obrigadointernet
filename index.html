@@ -324,6 +324,7 @@ const SERVER = HTTP;                  // salva/analisa via API do servidor
 let EDIT_TOKEN = DEPLOY ? (sessionStorage.getItem("edit-token")||"") : "";
 let unlocked = !DEPLOY || !!EDIT_TOKEN;               // local/file: livre; deploy: precisa senha
 let READONLY = false;                                 // espelho: sem edição nenhuma (setado via /api/health)
+let SEMANTIC = false;                                 // busca semântica disponível no servidor (via /api/health)
 let healthKnown = !DEPLOY;                             // no deploy, espera o /api/health antes de revelar o painel
 const canEdit = ()=> !READONLY && (FILE || LOCALSRV || (DEPLOY && unlocked));   // deletar/arrastar
 const canAdd  = ()=> !READONLY && (LOCALSRV || (DEPLOY && unlocked));           // adder (Gemini precisa do servidor)
@@ -499,9 +500,6 @@ paintSort();
 const semInput=document.getElementById("semInput"),semBtn=document.getElementById("semBtn"),
       semClear=document.getElementById("semClear"),semAnswer=document.getElementById("semAnswer");
 let semanticResult=null;   // {answer, refs:[...]}
-function catalogForPrompt(){
-  return REFS.filter(live).map(r=>`"${(r.title||"").replace(/"/g,"'")}" [${r.cat}${(r.types||[]).length?"/"+r.types.join(","):""}] ${(r.desc||"").slice(0,220)}${r.url?" ("+r.url+")":""}`).join("\n");
-}
 function parseObj(raw){
   let t=String(raw||"").replace(/```(?:json)?/gi,"").trim();
   try{return JSON.parse(t);}catch(_){}
@@ -515,17 +513,18 @@ function parseObj(raw){
 }
 async function askSemantic(q){
   if(!q)return;
-  if(!canAdd()){ semAnswer.textContent="A busca semântica precisa da edição desbloqueada (usa a IA)."; semClear.style.display=""; return; }
+  if(!SEMANTIC){ semAnswer.textContent="Busca semântica indisponível neste site."; semClear.style.display=""; return; }
   semBtn.disabled=true; semClear.style.display="";
   semAnswer.innerHTML='<span class="spin"></span>Pensando…';
-  const prompt=`Você é um assistente de busca semântica de um catálogo de ferramentas, sites e recursos, em PORTUGUÊS. Responda à pergunta do usuário de forma útil e direta (2 a 5 frases), recomendando os itens mais adequados pelo NOME, com base APENAS no catálogo abaixo. Depois liste os títulos EXATOS dos itens relevantes, do mais para o menos relevante (máx. 12). Se nada servir, diga isso e devolva matches vazio.\n\nCATÁLOGO:\n${catalogForPrompt()}\n\nPERGUNTA: ${q}\n\nResponda SOMENTE em JSON: {"answer":"...","matches":["título exato",...]}`;
   try{
-    const raw=await gemini({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.3,maxOutputTokens:2048,responseMimeType:"application/json",thinkingConfig:{thinkingBudget:0}}});
-    const j=parseObj(raw)||{};
+    const res=await fetch("/api/semantic",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({q})});
+    const j=await res.json().catch(()=>({}));
+    if(!res.ok||!j.ok){ semAnswer.textContent="Erro: "+((j&&j.error)||("HTTP "+res.status)); semBtn.disabled=false; return; }
+    const parsed=parseObj(j.raw)||{};
     const byNorm=new Map(REFS.filter(live).map(r=>[norm(r.title),r]));
     const refs=[],seen=new Set();
-    (Array.isArray(j.matches)?j.matches:[]).forEach(t=>{const r=byNorm.get(norm(String(t)));if(r&&!seen.has(r)){seen.add(r);refs.push(r);}});
-    semanticResult={answer:(j.answer||"").trim(),refs};
+    (Array.isArray(parsed.matches)?parsed.matches:[]).forEach(t=>{const r=byNorm.get(norm(String(t)));if(r&&!seen.has(r)){seen.add(r);refs.push(r);}});
+    semanticResult={answer:(parsed.answer||"").trim(),refs};
     semAnswer.textContent=semanticResult.answer||"(sem resposta)";
     render();
   }catch(e){ semAnswer.textContent="Erro na busca: "+e.message; }
@@ -763,7 +762,7 @@ exportBtn.onclick=exportData;
 function syncAdder(){
   const ad=document.querySelector(".adder"), row=document.querySelector(".adder-row"), sub=document.querySelector(".adder-sub");
   const sortT=document.getElementById("sortToggle"); if(sortT)sortT.style.display=canEdit()?"inline-flex":"none"; // ordenar por data: só admin
-  const sb=document.getElementById("semBar"); if(sb)sb.style.display=canAdd()?"block":"none"; // busca semântica: só admin (usa IA)
+  const sb=document.getElementById("semBar"); if(sb)sb.style.display=SEMANTIC?"block":"none"; // busca semântica: onde o servidor tiver IA (inclui público)
   exportBtn.style.display = FILE ? "" : "none";
   if(FILE){ ad.style.display="none"; return; }
   if(DEPLOY && !healthKnown){ ad.style.display="none"; return; }   // aguarda health (evita flash no espelho)
@@ -781,7 +780,7 @@ function applyReadonly(){
   document.querySelectorAll(".hint").forEach(el=>el.style.display="none"); // sem eyebrows de instrução
   const cr=document.getElementById("credit"); if(cr)cr.style.display="block"; // crédito (só no espelho)
 }
-if(DEPLOY){ fetch("/api/health").then(r=>r.json()).then(h=>{ READONLY=!!h.readOnly; healthKnown=true; if(READONLY)applyReadonly(); syncAdder(); render(); }).catch(()=>{ healthKnown=true; syncAdder(); }); }
+if(SERVER){ fetch("/api/health").then(r=>r.json()).then(h=>{ SEMANTIC=!!h.semantic; if(DEPLOY){ READONLY=!!h.readOnly; healthKnown=true; if(READONLY)applyReadonly(); } syncAdder(); render(); }).catch(()=>{ healthKnown=true; syncAdder(); }); }
 
 buildFilters();render();
 </script>

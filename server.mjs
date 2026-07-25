@@ -89,6 +89,16 @@ function readBody(req, limit = 25e6) {
 }
 function json(res, code, obj) { res.writeHead(code, { "content-type": "application/json" }); res.end(JSON.stringify(obj)); }
 
+// rate limit por IP p/ endpoints públicos (busca semântica)
+const rlHits = new Map();
+function rateOk(ip, max = 12, winMs = 5 * 60 * 1000) {
+  const now = Date.now();
+  const arr = (rlHits.get(ip) || []).filter((t) => now - t < winMs);
+  if (arr.length >= max) { rlHits.set(ip, arr); return false; }
+  arr.push(now); rlHits.set(ip, arr); return true;
+}
+function clientIp(req) { return String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.socket.remoteAddress || "?"; }
+
 // ---- og-scrape: lê meta tags do post (og:image/título/descrição). Não baixa mídia. ----
 function decodeEnt(s) { return (s || "").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&#x27;/gi, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">"); }
 function parseMetas(html) {
@@ -226,7 +236,7 @@ const server = http.createServer(async (req, res) => {
       return res.end(body);
     }
     if (req.method === "GET" && req.url === "/api/health") {
-      return json(res, 200, { ok: true, railway: RAILWAY, hasEditToken: !!EDIT_TOKEN, hasGeminiKey: !!GEMINI_API_KEY, usingVolume: DATA_DIR !== DIR, dataDir: DATA_DIR, hasCobalt: !!COBALT_API, readOnly: READ_ONLY, mirror: !!MIRROR_URL });
+      return json(res, 200, { ok: true, railway: RAILWAY, hasEditToken: !!EDIT_TOKEN, hasGeminiKey: !!GEMINI_API_KEY, usingVolume: DATA_DIR !== DIR, dataDir: DATA_DIR, hasCobalt: !!COBALT_API, readOnly: READ_ONLY, mirror: !!MIRROR_URL, semantic: (!!GEMINI_API_KEY || !!MIRROR_URL) });
     }
     if (req.method === "POST" && req.url === "/api/auth") {
       const { token } = JSON.parse((await readBody(req)) || "{}");
@@ -257,6 +267,32 @@ const server = http.createServer(async (req, res) => {
       }
       res.writeHead(gres.status, { "content-type": "application/json" });
       return res.end(text);
+    }
+    // ---- busca semântica PÚBLICA (sem senha): prompt montado no servidor, rate-limit por IP ----
+    if (req.method === "POST" && req.url === "/api/semantic") {
+      const ip = clientIp(req);
+      if (!rateOk(ip)) return json(res, 429, { ok: false, error: "muitas buscas — aguarde um pouco" });
+      let body; try { body = JSON.parse((await readBody(req)) || "{}"); } catch { body = {}; }
+      const q = String(body.q || "").slice(0, 300).trim();
+      if (!q) return json(res, 400, { ok: false, error: "pergunta vazia" });
+      // sem chave local mas com espelho → encaminha pro original (a chave fica num lugar só)
+      if (!GEMINI_API_KEY && MIRROR_URL) {
+        try {
+          const r = await fetch(MIRROR_URL + "/api/semantic", { method: "POST", headers: { "content-type": "application/json", "x-forwarded-for": ip }, body: JSON.stringify({ q }) });
+          const t = await r.text(); res.writeHead(r.status, { "content-type": "application/json" }); return res.end(t);
+        } catch { return json(res, 502, { ok: false, error: "upstream indisponível" }); }
+      }
+      if (!GEMINI_API_KEY) return json(res, 400, { ok: false, error: "busca semântica indisponível" });
+      let catText = "";
+      try {
+        const src = MIRROR_URL ? await getMirrorData() : fs.readFileSync(DATA_FILE, "utf8");
+        const w = {}; new Function("window", src)(w);
+        const refs = (w.REFS_DATA && w.REFS_DATA.refs) || [];
+        catText = refs.map((r) => `"${String(r.title || "").replace(/"/g, "'")}" [${r.cat}${(r.types || []).length ? "/" + r.types.join(",") : ""}] ${String(r.desc || "").slice(0, 220)}${r.url ? " (" + r.url + ")" : ""}`).join("\n");
+      } catch { return json(res, 500, { ok: false, error: "catálogo indisponível" }); }
+      const prompt = `Você é um assistente de busca semântica de um catálogo de ferramentas, sites e recursos, em PORTUGUÊS. Responda à pergunta de forma útil e direta (2 a 5 frases), recomendando os itens mais adequados pelo NOME, com base APENAS no catálogo abaixo. Depois liste os títulos EXATOS dos itens relevantes, do mais para o menos relevante (máx. 12). Se nada servir, diga isso e devolva matches vazio.\n\nCATÁLOGO:\n${catText}\n\nPERGUNTA: ${q}\n\nResponda SOMENTE em JSON: {"answer":"...","matches":["título exato",...]}`;
+      let raw; try { raw = await geminiCards([{ text: prompt }]); } catch (e) { return json(res, 502, { ok: false, error: e.message }); }
+      return json(res, 200, { ok: true, raw });
     }
     // ---- ingerir link social via Cobalt: carrossel (todos os slides) ou vídeo (áudio→transcrição).
     //      NÃO armazena mídia. O Gemini devolve {cards:[...]} já filtrado e sem duplicatas. ----
