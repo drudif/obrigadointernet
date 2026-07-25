@@ -156,6 +156,27 @@
   .card.dragging{opacity:.4;cursor:grabbing}
   .chip.drop-hover{outline:2px dashed var(--ink);outline-offset:3px;background:var(--paper-2)}
 
+  /* busca semântica (fundo laranja da paleta) */
+  .sem{background:var(--design);border-bottom:1.5px solid var(--line);display:none}
+  .sem .wrap{padding:clamp(18px,2.4vw,28px) clamp(20px,4vw,44px)}
+  .sem-label{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:rgba(244,239,230,.85);margin-bottom:12px}
+  .sem-row{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+  .sem-input{flex:1;min-width:220px;border:1.5px solid rgba(244,239,230,.55);background:rgba(255,255,255,.12);
+    color:var(--paper);font-family:var(--sans);font-weight:500;font-size:15px;padding:12px 18px;border-radius:999px;outline:none}
+  .sem-input::placeholder{color:rgba(244,239,230,.7)}
+  .sem-input:focus{border-color:var(--paper)}
+  .sem-btn{border:1.5px solid var(--paper);background:var(--paper);color:var(--design);font-weight:700;font-size:12px;
+    letter-spacing:.06em;text-transform:uppercase;padding:12px 24px;border-radius:999px;cursor:pointer;font-family:var(--sans);white-space:nowrap}
+  .sem-btn:hover{background:transparent;color:var(--paper)}
+  .sem-btn:disabled{opacity:.6;cursor:default}
+  .sem-clear{border:1.5px solid rgba(244,239,230,.55);background:transparent;color:var(--paper);width:46px;border-radius:999px;
+    cursor:pointer;font-size:20px;line-height:1;font-family:var(--sans)}
+  .sem-clear:hover{background:rgba(255,255,255,.12)}
+  .sem-answer{color:var(--paper);font-size:15.5px;line-height:1.6;margin-top:16px;white-space:pre-wrap;font-weight:500;max-width:74ch}
+  .sem-answer:empty{display:none}
+  .sem-answer .spin{width:13px;height:13px;border:2px solid rgba(244,239,230,.4);border-top-color:var(--paper);border-radius:50%;display:inline-block;vertical-align:-2px;margin-right:8px;animation:refspin .7s linear infinite}
+  .sem-count{margin:26px 0 4px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+
   /* adicionar referência (Gemini) */
   .adder{border-bottom:1.5px solid var(--line);background:var(--paper);display:none}
   .adder .wrap{padding:clamp(20px,2.6vw,30px) clamp(20px,4vw,44px)}
@@ -199,6 +220,18 @@
     </div>
   </div>
 </header>
+
+<section class="sem" id="semBar">
+  <div class="wrap">
+    <span class="sem-label">✦ Busca semântica — pergunte em linguagem natural</span>
+    <div class="sem-row">
+      <input id="semInput" class="sem-input" placeholder="Ex.: o que usar pra tirar fundo de imagem? · ferramentas de motion no browser?" autocomplete="off">
+      <button id="semBtn" class="sem-btn">Perguntar</button>
+      <button id="semClear" class="sem-clear" title="Limpar resposta" style="display:none">&times;</button>
+    </div>
+    <div id="semAnswer" class="sem-answer"></div>
+  </div>
+</section>
 
 <section class="adder">
   <div class="wrap">
@@ -418,6 +451,13 @@ function render(){
   const total=REFS.filter(visible).length;
   resultCount.textContent=(query||activeTypes.size||activeCats.size)?`${total} ${total===1?'resultado':'resultados'}`:"";
   if(!REFS.length){content.innerHTML=`<p class="empty">Sem dados — refs-data.js ausente ou vazio.</p>`;return;}
+  if(semanticResult){   // resultado da busca semântica: cards relacionados abaixo da resposta
+    const items=semanticResult.refs.filter(live);
+    content.innerHTML=items.length
+      ?`<p class="sem-count">${items.length} referência(s) relacionada(s)</p><div class="grid">${items.map(card).join("")}</div>`
+      :`<p class="empty">Sem cards relacionados a essa busca.</p>`;
+    return;
+  }
   if(sortByDate){   // lista plana, mais recentes primeiro (empate: quem entrou depois no array)
     const items=REFS.map((r,i)=>[r,i]).filter(([r])=>visible(r))
       .sort((a,b)=>((b[0].date||"").localeCompare(a[0].date||""))||(b[1]-a[1])).map(([r])=>r);
@@ -454,6 +494,47 @@ const sortToggle=document.getElementById("sortToggle");
 const paintSort=()=>sortToggle.classList.toggle("on",sortByDate);
 sortToggle.addEventListener("click",()=>{sortByDate=!sortByDate;localStorage.setItem("refs-sort",sortByDate?"date":"cat");paintSort();render();});
 paintSort();
+
+// ---- busca semântica (Gemini) — separada da busca por palavra-chave; só admin ----
+const semInput=document.getElementById("semInput"),semBtn=document.getElementById("semBtn"),
+      semClear=document.getElementById("semClear"),semAnswer=document.getElementById("semAnswer");
+let semanticResult=null;   // {answer, refs:[...]}
+function catalogForPrompt(){
+  return REFS.filter(live).map(r=>`"${(r.title||"").replace(/"/g,"'")}" [${r.cat}${(r.types||[]).length?"/"+r.types.join(","):""}] ${(r.desc||"").slice(0,220)}${r.url?" ("+r.url+")":""}`).join("\n");
+}
+function parseObj(raw){
+  let t=String(raw||"").replace(/```(?:json)?/gi,"").trim();
+  try{return JSON.parse(t);}catch(_){}
+  const i=t.indexOf("{"); if(i<0)return null;
+  let depth=0,inStr=false,esc=false;
+  for(let k=i;k<t.length;k++){const c=t[k];
+    if(inStr){ if(esc)esc=false; else if(c==="\\")esc=true; else if(c==='"')inStr=false; }
+    else { if(c==='"')inStr=true; else if(c==="{")depth++; else if(c==="}"){ if(--depth===0){ try{return JSON.parse(t.slice(i,k+1));}catch(_){return null;} } } }
+  }
+  return null;
+}
+async function askSemantic(q){
+  if(!q)return;
+  if(!canAdd()){ semAnswer.textContent="A busca semântica precisa da edição desbloqueada (usa a IA)."; semClear.style.display=""; return; }
+  semBtn.disabled=true; semClear.style.display="";
+  semAnswer.innerHTML='<span class="spin"></span>Pensando…';
+  const prompt=`Você é um assistente de busca semântica de um catálogo de ferramentas, sites e recursos, em PORTUGUÊS. Responda à pergunta do usuário de forma útil e direta (2 a 5 frases), recomendando os itens mais adequados pelo NOME, com base APENAS no catálogo abaixo. Depois liste os títulos EXATOS dos itens relevantes, do mais para o menos relevante (máx. 12). Se nada servir, diga isso e devolva matches vazio.\n\nCATÁLOGO:\n${catalogForPrompt()}\n\nPERGUNTA: ${q}\n\nResponda SOMENTE em JSON: {"answer":"...","matches":["título exato",...]}`;
+  try{
+    const raw=await gemini({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.3,maxOutputTokens:2048,responseMimeType:"application/json",thinkingConfig:{thinkingBudget:0}}});
+    const j=parseObj(raw)||{};
+    const byNorm=new Map(REFS.filter(live).map(r=>[norm(r.title),r]));
+    const refs=[],seen=new Set();
+    (Array.isArray(j.matches)?j.matches:[]).forEach(t=>{const r=byNorm.get(norm(String(t)));if(r&&!seen.has(r)){seen.add(r);refs.push(r);}});
+    semanticResult={answer:(j.answer||"").trim(),refs};
+    semAnswer.textContent=semanticResult.answer||"(sem resposta)";
+    render();
+  }catch(e){ semAnswer.textContent="Erro na busca: "+e.message; }
+  finally{ semBtn.disabled=false; }
+}
+function clearSemantic(){ semanticResult=null; semAnswer.textContent=""; semClear.style.display="none"; semInput.value=""; render(); }
+semBtn.addEventListener("click",()=>askSemantic(semInput.value.trim()));
+semInput.addEventListener("keydown",e=>{ if(e.key==="Enter")askSemantic(semInput.value.trim()); });
+semClear.addEventListener("click",clearSemantic);
 
 // clique no × remove a referência (SERVER: apaga do arquivo · file://: oculta no navegador)
 content.addEventListener("click",e=>{
@@ -682,6 +763,7 @@ exportBtn.onclick=exportData;
 function syncAdder(){
   const ad=document.querySelector(".adder"), row=document.querySelector(".adder-row"), sub=document.querySelector(".adder-sub");
   const sortT=document.getElementById("sortToggle"); if(sortT)sortT.style.display=canEdit()?"inline-flex":"none"; // ordenar por data: só admin
+  const sb=document.getElementById("semBar"); if(sb)sb.style.display=canAdd()?"block":"none"; // busca semântica: só admin (usa IA)
   exportBtn.style.display = FILE ? "" : "none";
   if(FILE){ ad.style.display="none"; return; }
   if(DEPLOY && !healthKnown){ ad.style.display="none"; return; }   // aguarda health (evita flash no espelho)
