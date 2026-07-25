@@ -39,7 +39,8 @@
   header{padding:clamp(44px,6vw,80px) 0 26px;border-bottom:1.5px solid var(--line)}
   .head-row{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
   .credit-eyebrow{display:none;font-size:11px;letter-spacing:.04em;color:var(--ink-3);font-weight:600;margin-bottom:20px}
-  .tagline{display:none;font-family:var(--sans);font-weight:500;font-size:clamp(14px,1.55vw,17px);color:var(--ink-2);line-height:1.5;max-width:62ch;margin-top:22px}
+  .tagline{display:none;font-family:var(--sans);font-weight:500;font-size:clamp(10.5px,1.15vw,14px);color:var(--ink-2);line-height:1.5;margin-top:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  @media(max-width:640px){.tagline{white-space:normal}}
   .tagline a{color:var(--design);font-weight:700;border-bottom:1.5px solid var(--hair);transition:color .18s,border-color .18s}
   .tagline a:hover{color:var(--design);border-color:var(--design)}
   .credit-eyebrow a{color:var(--ink-2);font-weight:700;border-bottom:1.5px solid var(--hair);transition:color .18s,border-color .18s}
