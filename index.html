@@ -92,10 +92,11 @@
     transition:transform .18s cubic-bezier(.2,.9,.3,1),box-shadow .18s,background .18s}
   .card .bar{height:5px;background:var(--cc)}
   .card-thumb{width:100%;height:150px;object-fit:cover;object-position:top;display:block;border-bottom:1.5px solid var(--hair);filter:saturate(.95);background:var(--paper-2)}
-  .shots-toggle{margin-left:auto}
-  .shots-toggle .dotmini{width:7px;height:7px;border-radius:50%;background:var(--ink-3);display:inline-block;transition:background .15s}
-  .shots-toggle.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-  .shots-toggle.on .dotmini{background:var(--self)}
+  .toggles{margin-left:auto;display:inline-flex;gap:7px;align-items:center}
+  .sort-toggle{display:none}                        /* só na versão admin */
+  .sort-toggle .dotmini,.shots-toggle .dotmini{width:7px;height:7px;border-radius:50%;background:var(--ink-3);display:inline-block;transition:background .15s}
+  .sort-toggle.on,.shots-toggle.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .sort-toggle.on .dotmini,.shots-toggle.on .dotmini{background:var(--self)}
   .card .pad{padding:20px 20px 18px;display:flex;flex-direction:column;gap:11px;flex:1}
   .card:hover{background:var(--paper-2);transform:translate(-3px,-3px);box-shadow:6px 6px 0 var(--cc)}
   .card-top{display:flex;flex-direction:column;align-items:flex-start;gap:9px}
@@ -234,7 +235,10 @@
         <button class="clear" id="clear" aria-label="Limpar">&times;</button>
       </label>
       <span class="rc" id="resultCount"></span>
-      <button class="chip shots-toggle" id="shotsToggle" title="Mostrar print da home nos cards de site (mShots)"><span class="dotmini"></span>Prints</button>
+      <span class="toggles">
+        <button class="chip sort-toggle" id="sortToggle" title="Ordenar por data de adição (mais recentes primeiro)"><span class="dotmini"></span>Recentes</button>
+        <button class="chip shots-toggle" id="shotsToggle" title="Mostrar print da home nos cards de site (mShots)"><span class="dotmini"></span>Prints</button>
+      </span>
     </div>
   </div>
 </nav>
@@ -375,6 +379,7 @@ function buildFilters(){
 
 // prints da home (mShots do WordPress) — derivados da URL, nada é armazenado; toggle persistido
 let showShots=localStorage.getItem("refs-shots")==="1";
+let sortByDate=localStorage.getItem("refs-sort")==="date";   // ordenar por data de adição (admin)
 const shotUrl=u=>"https://s.wordpress.com/mshots/v1/"+encodeURIComponent(u)+"?w=640&h=400";
 function card(r){
   const cat=CATS[r.cat]||{label:r.cat,c:"var(--ink)"};
@@ -413,6 +418,14 @@ function render(){
   const total=REFS.filter(visible).length;
   resultCount.textContent=(query||activeTypes.size||activeCats.size)?`${total} ${total===1?'resultado':'resultados'}`:"";
   if(!REFS.length){content.innerHTML=`<p class="empty">Sem dados — refs-data.js ausente ou vazio.</p>`;return;}
+  if(sortByDate){   // lista plana, mais recentes primeiro (empate: quem entrou depois no array)
+    const items=REFS.map((r,i)=>[r,i]).filter(([r])=>visible(r))
+      .sort((a,b)=>((b[0].date||"").localeCompare(a[0].date||""))||(b[1]-a[1])).map(([r])=>r);
+    content.innerHTML=items.length
+      ?`<section class="section"><div class="section-head"><h2>Recentes</h2><span class="count">${pad2(items.length)} ${items.length===1?'entrada':'entradas'}</span></div><div class="grid">${items.map(card).join("")}</div></section>`
+      :`<p class="empty">Nada encontrado.</p>`;
+    return;
+  }
   const groups=CATKEYS.filter(k=>activeCats.size===0||activeCats.has(k));
   let html="",n=0;
   groups.forEach(k=>{
@@ -437,6 +450,10 @@ const shotsToggle=document.getElementById("shotsToggle");
 const paintShots=()=>shotsToggle.classList.toggle("on",showShots);
 shotsToggle.addEventListener("click",()=>{showShots=!showShots;localStorage.setItem("refs-shots",showShots?"1":"0");paintShots();render();});
 paintShots();
+const sortToggle=document.getElementById("sortToggle");
+const paintSort=()=>sortToggle.classList.toggle("on",sortByDate);
+sortToggle.addEventListener("click",()=>{sortByDate=!sortByDate;localStorage.setItem("refs-sort",sortByDate?"date":"cat");paintSort();render();});
+paintSort();
 
 // clique no × remove a referência (SERVER: apaga do arquivo · file://: oculta no navegador)
 content.addEventListener("click",e=>{
@@ -664,6 +681,7 @@ exportBtn.onclick=exportData;
 // visibilidade do painel (o .adder começa oculto no CSS → sem flash)
 function syncAdder(){
   const ad=document.querySelector(".adder"), row=document.querySelector(".adder-row"), sub=document.querySelector(".adder-sub");
+  const sortT=document.getElementById("sortToggle"); if(sortT)sortT.style.display=canEdit()?"inline-flex":"none"; // ordenar por data: só admin
   exportBtn.style.display = FILE ? "" : "none";
   if(FILE){ ad.style.display="none"; return; }
   if(DEPLOY && !healthKnown){ ad.style.display="none"; return; }   // aguarda health (evita flash no espelho)
