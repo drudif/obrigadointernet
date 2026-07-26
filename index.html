@@ -91,10 +91,10 @@
   .section-head .count{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
 
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
-  .card{background:transparent;border:1.5px solid var(--line);padding:0;display:flex;flex-direction:column;
-    position:relative;border-radius:var(--r);overflow:hidden;
-    transition:transform .18s cubic-bezier(.2,.9,.3,1),box-shadow .18s,background .18s}
-  .card .bar{height:5px;background:linear-gradient(90deg,var(--cc) 0%,var(--cc) 42%,var(--cc2) 58%,var(--cc2) 100%)}
+  .card{background:var(--paper);border:1.5px solid var(--line);padding:0;display:flex;flex-direction:column;
+    position:relative;top:0;left:0;border-radius:var(--r);
+    transition:top .18s cubic-bezier(.2,.9,.3,1),left .18s cubic-bezier(.2,.9,.3,1),background .18s}
+  .card .bar{height:5px;border-radius:calc(var(--r) - 1.5px) calc(var(--r) - 1.5px) 0 0;background:linear-gradient(90deg,var(--cc) 0%,var(--cc) 42%,var(--cc2) 58%,var(--cc2) 100%)}
   /* dropdown discreto de categorias (máx. 2) — substitui o arrastar */
   .catpick{position:relative;margin-left:auto}
   .catpick>summary{list-style:none;cursor:pointer;width:20px;height:20px;border:1.5px solid var(--hair);border-radius:999px;
@@ -109,14 +109,17 @@
   .cpitem:hover{background:var(--paper-2)}
   .cpitem input{accent-color:var(--ink);margin:0}
   .cpsw{width:9px;height:9px;border-radius:50%;background:var(--cc);flex-shrink:0}
-  .card-thumb{width:100%;height:150px;object-fit:cover;object-position:top;display:block;border-bottom:1.5px solid var(--hair);filter:saturate(.95);background:var(--paper-2)}
+  .card-thumb{width:100%;height:150px;object-fit:cover;object-position:top;display:block;border-bottom:1.5px solid var(--hair);filter:saturate(.95);background:var(--paper-2);border-radius:calc(var(--r) - 6px) calc(var(--r) - 6px) 0 0}
   .toggles{margin-left:auto;display:inline-flex;gap:7px;align-items:center}
   .sort-toggle{display:none}                        /* só na versão admin */
   .sort-toggle .dotmini,.shots-toggle .dotmini{width:7px;height:7px;border-radius:50%;background:var(--ink-3);display:inline-block;transition:background .15s}
   .sort-toggle.on,.shots-toggle.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
   .sort-toggle.on .dotmini,.shots-toggle.on .dotmini{background:var(--self)}
   .card .pad{padding:20px 20px 18px;display:flex;flex-direction:column;gap:11px;flex:1}
-  .card:hover{background:var(--paper-2);transform:translate(-3px,-3px);box-shadow:6px 6px 0 var(--cc)}
+  .card:hover{background:var(--paper-2);top:-3px;left:-3px}
+  /* extrude do hover: gradiente das 2 categorias (sólido quando é 1 só, pois --cc2===--cc) */
+  .card::after{content:"";position:absolute;inset:0;border-radius:var(--r);background:linear-gradient(135deg,var(--cc),var(--cc2));z-index:-1;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s cubic-bezier(.2,.9,.3,1)}
+  .card:hover::after{opacity:1;transform:translate(9px,9px)}
   .card-top{display:flex;flex-direction:column;align-items:flex-start;gap:9px}
   .card-top h3{min-width:0}
   .is-installed .card-top h3{padding-right:78px}
