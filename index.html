@@ -655,6 +655,8 @@ function makeRef(j,extra){
   const ref={title:(j.title||url||"Sem título").slice(0,120),url,cat:normCat(j.cat),src:"upload",types:normTypes(j.types),desc:(j.desc||"").slice(0,700),date:new Date().toISOString().slice(0,10),added:true};
   if(j.cat2&&CATS[j.cat2]&&j.cat2!==ref.cat)ref.cat2=j.cat2;   // 2ª categoria opcional (IA)
   if(extra){ if(extra.thumb)ref.thumb=extra.thumb; if(extra.source)ref.source=extra.source; }
+  // card vindo de post social (Instagram etc.): thumb = print do SITE indicado, não do conteúdo do post
+  if(!ref.thumb && extra && extra.source && isSocial(extra.source) && /^https?:\/\//i.test(ref.url) && !isSocial(ref.url)) ref.thumb=shotUrl(ref.url);
   ref._s=norm([ref.title,ref.desc,catsOf(ref).map(c=>CATS[c]&&CATS[c].label).join(" "),(ref.types||[]).join(" "),ref.url].join(" "));
   return ref;
 }
