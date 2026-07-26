@@ -95,10 +95,10 @@
   .card-wrap{position:relative;display:flex;border-radius:var(--r)}
   .card-wrap::after{content:"";position:absolute;inset:0;border-radius:var(--r);background:linear-gradient(135deg,var(--cc),var(--cc2));z-index:-1;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s cubic-bezier(.2,.9,.3,1)}
   .card-wrap:hover::after{opacity:1;transform:translate(9px,9px)}
-  .card-wrap:hover .card{transform:translate(-3px,-3px);background:var(--paper-2)}
+  .card-wrap:hover .card{top:-3px;left:-3px;background:var(--paper-2)}
   .card{background:var(--paper);border:1.5px solid var(--line);padding:0;display:flex;flex-direction:column;flex:1;min-width:0;
-    position:relative;border-radius:var(--r);overflow:hidden;
-    transition:transform .18s cubic-bezier(.2,.9,.3,1),background .18s}
+    position:relative;top:0;left:0;border-radius:var(--r);overflow:hidden;
+    transition:top .18s cubic-bezier(.2,.9,.3,1),left .18s cubic-bezier(.2,.9,.3,1),background .18s}
   .card .bar{height:5px;background:linear-gradient(90deg,var(--cc) 0%,var(--cc) 42%,var(--cc2) 58%,var(--cc2) 100%)}
   /* dropdown discreto de categorias (máx. 2) — substitui o arrastar */
   .catpick{position:relative;margin-left:auto}
@@ -108,9 +108,9 @@
   .card:hover .catpick>summary{opacity:.9}
   .catpick>summary:hover{color:var(--ink);border-color:var(--ink)}
   .catpick[open]>summary{color:var(--ink);border-color:var(--ink);opacity:1}
-  .catpick-menu{position:absolute;right:0;top:26px;z-index:30;background:var(--paper);border:1.5px solid var(--line);border-radius:12px;
-    padding:5px;min-width:186px;box-shadow:5px 5px 0 rgba(25,21,18,.12);display:flex;flex-direction:column;gap:1px;max-height:min(58vh,320px);overflow-y:auto}
-  .cpitem{display:flex;align-items:center;gap:7px;padding:4px 8px;border-radius:7px;font-size:11.5px;line-height:1.2;font-weight:600;color:var(--ink-2);cursor:pointer;letter-spacing:0;text-transform:none}
+  .catpick-menu{position:fixed;z-index:1000;background:var(--paper);border:1.5px solid var(--line);border-radius:12px;
+    padding:5px;min-width:200px;box-shadow:5px 5px 0 rgba(25,21,18,.14);display:flex;flex-direction:column;gap:1px;max-height:min(70vh,360px);overflow-y:auto}
+  .cpitem{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:7px;font-size:11.5px;line-height:1.15;font-weight:600;color:var(--ink-2);cursor:pointer;letter-spacing:0;text-transform:none;white-space:nowrap}
   .cpitem:hover{background:var(--paper-2)}
   .cpitem input{accent-color:var(--ink);margin:0}
   .cpsw{width:9px;height:9px;border-radius:50%;background:var(--cc);flex-shrink:0}
@@ -597,6 +597,19 @@ content.addEventListener("change",e=>{
   if(SERVER){ persist(); } else { const o=overrides[art.dataset.slug]||(overrides[art.dataset.slug]={}); o.cat=r.cat; if(r.cat2)o.cat2=r.cat2; else delete o.cat2; saveOv(); }
   buildFilters(); // atualiza os contadores das categorias (não fecha o menu)
 });
+// posiciona o menu (position:fixed, escapa do overflow do card) ao abrir
+content.addEventListener("click",e=>{
+  const sum=e.target.closest(".catpick>summary"); if(!sum)return;
+  const det=sum.parentElement;
+  setTimeout(()=>{ if(!det.open)return; const m=det.querySelector(".catpick-menu"); if(!m)return;
+    const r=sum.getBoundingClientRect();
+    m.style.left=Math.max(8,Math.min(r.right-m.offsetWidth, window.innerWidth-m.offsetWidth-8))+"px";
+    m.style.top=Math.max(8,Math.min(r.bottom+6, window.innerHeight-m.offsetHeight-10))+"px";
+  },0);
+});
+// fecha o dropdown ao rolar ou clicar fora
+window.addEventListener("scroll",()=>{document.querySelectorAll(".catpick[open]").forEach(d=>{d.open=false;});},true);
+document.addEventListener("click",e=>{ if(e.target.closest(".catpick"))return; document.querySelectorAll(".catpick[open]").forEach(d=>{d.open=false;}); });
 
 // ---------- Adicionar referência (Gemini via servidor /api/analyze) ----------
 const addUrl=document.getElementById("addUrl"),addUrlBtn=document.getElementById("addUrlBtn");
