@@ -103,9 +103,9 @@
   .card:hover .catpick>summary{opacity:.9}
   .catpick>summary:hover{color:var(--ink);border-color:var(--ink)}
   .catpick[open]>summary{color:var(--ink);border-color:var(--ink);opacity:1}
-  .catpick-menu{position:absolute;right:0;top:26px;z-index:20;background:var(--paper);border:1.5px solid var(--line);border-radius:12px;
-    padding:6px;min-width:190px;box-shadow:5px 5px 0 rgba(25,21,18,.12);display:flex;flex-direction:column;gap:1px}
-  .cpitem{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;font-size:12px;font-weight:600;color:var(--ink-2);cursor:pointer;letter-spacing:0;text-transform:none}
+  .catpick-menu{position:absolute;right:0;top:26px;z-index:30;background:var(--paper);border:1.5px solid var(--line);border-radius:12px;
+    padding:5px;min-width:186px;box-shadow:5px 5px 0 rgba(25,21,18,.12);display:flex;flex-direction:column;gap:1px;max-height:min(58vh,320px);overflow-y:auto}
+  .cpitem{display:flex;align-items:center;gap:7px;padding:4px 8px;border-radius:7px;font-size:11.5px;line-height:1.2;font-weight:600;color:var(--ink-2);cursor:pointer;letter-spacing:0;text-transform:none}
   .cpitem:hover{background:var(--paper-2)}
   .cpitem input{accent-color:var(--ink);margin:0}
   .cpsw{width:9px;height:9px;border-radius:50%;background:var(--cc);flex-shrink:0}
