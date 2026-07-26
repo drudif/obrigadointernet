@@ -651,7 +651,9 @@ const normTypes=t=>{const ok=["site","repo","skill"];const arr=(Array.isArray(t)
 const cleanUrl=u=>(u||"").replace(/^https?:\/\//i,"").replace(/\/+$/,"").toLowerCase();
 const urlDupe=url=>!!url&&REFS.some(r=>cleanUrl(r.url)===cleanUrl(url)&&cleanUrl(url));
 function makeRef(j,extra){
-  const url=(j.url||(extra&&extra.source)||"").trim();
+  let url=(j.url||"").trim();
+  // fallback pra source SÓ se não for post de rede social (o link do card nunca deve ser o Instagram)
+  if(!url && extra && extra.source && !isSocial(extra.source)) url=extra.source.trim();
   const ref={title:(j.title||url||"Sem título").slice(0,120),url,cat:normCat(j.cat),src:"upload",types:normTypes(j.types),desc:(j.desc||"").slice(0,700),date:new Date().toISOString().slice(0,10),added:true};
   if(j.cat2&&CATS[j.cat2]&&j.cat2!==ref.cat)ref.cat2=j.cat2;   // 2ª categoria opcional (IA)
   if(extra){ if(extra.thumb)ref.thumb=extra.thumb; if(extra.source)ref.source=extra.source; }
@@ -664,7 +666,7 @@ function makeRef(j,extra){
 function ingestPrompt(){
   const existing=REFS.filter(live).map(r=>`- ${r.title}${r.url?" — "+r.url:""}`).join("\n");
   return `Você cataloga ferramentas, sites e recursos, em PORTUGUÊS, a partir de mídia de um post de rede social (slides de um carrossel OU o áudio de um vídeo).
-Para CADA referência DISTINTA e catalogável (um site, ferramenta, repositório, recurso ou ideia com nome/link próprio), produza um objeto com EXATAMENTE: "title" (nome curto oficial), "url" (URL oficial https da referência; se não houver, ""), "cat" (categoria PRINCIPAL — uma destas CHAVES em minúsculo: ${Object.keys(CATS).join(", ")} — significados: ${CATLIST}), "cat2" (OPCIONAL — segunda CHAVE diferente, só se pertencer claramente a duas; senão omita), "types" (array só entre "site","repo","skill"), "desc" (2 a 3 frases analíticas, sobre o que é e pra que serve).
+Para CADA referência DISTINTA e catalogável (um site, ferramenta, repositório, recurso ou ideia com nome/link próprio), produza um objeto com EXATAMENTE: "title" (nome curto oficial), "url" (a URL OFICIAL https do SITE/ferramenta citado — NUNCA a URL do post/Reel do Instagram ou rede social; use seu conhecimento pra inferir o domínio oficial; se realmente não identificar, deixe ""), "cat" (categoria PRINCIPAL — uma destas CHAVES em minúsculo: ${Object.keys(CATS).join(", ")} — significados: ${CATLIST}), "cat2" (OPCIONAL — segunda CHAVE diferente, só se pertencer claramente a duas; senão omita), "types" (array só entre "site","repo","skill"), "desc" (2 a 3 frases analíticas, sobre o que é e pra que serve).
 IGNORE slides/trechos puramente decorativos, de capa/texto, ou sem referência importante — não gere objeto pra eles. Se vários slides tratam da MESMA referência, gere só um objeto.
 NÃO duplique referências que JÁ existem no catálogo abaixo (se for essencialmente uma destas, ignore):
 ${existing||"(catálogo vazio)"}
