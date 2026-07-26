@@ -94,7 +94,21 @@
   .card{background:transparent;border:1.5px solid var(--line);padding:0;display:flex;flex-direction:column;
     position:relative;border-radius:var(--r);overflow:hidden;
     transition:transform .18s cubic-bezier(.2,.9,.3,1),box-shadow .18s,background .18s}
-  .card .bar{height:5px;background:var(--cc)}
+  .card .bar{height:5px;background:linear-gradient(90deg,var(--cc) 0%,var(--cc) 42%,var(--cc2) 58%,var(--cc2) 100%)}
+  /* dropdown discreto de categorias (máx. 2) — substitui o arrastar */
+  .catpick{position:relative;margin-left:auto}
+  .catpick>summary{list-style:none;cursor:pointer;width:20px;height:20px;border:1.5px solid var(--hair);border-radius:999px;
+    display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink-3);line-height:1;user-select:none;opacity:.55;transition:opacity .15s,border-color .15s,color .15s}
+  .catpick>summary::-webkit-details-marker{display:none}
+  .card:hover .catpick>summary{opacity:.9}
+  .catpick>summary:hover{color:var(--ink);border-color:var(--ink)}
+  .catpick[open]>summary{color:var(--ink);border-color:var(--ink);opacity:1}
+  .catpick-menu{position:absolute;right:0;top:26px;z-index:20;background:var(--paper);border:1.5px solid var(--line);border-radius:12px;
+    padding:6px;min-width:190px;box-shadow:5px 5px 0 rgba(25,21,18,.12);display:flex;flex-direction:column;gap:1px}
+  .cpitem{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;font-size:12px;font-weight:600;color:var(--ink-2);cursor:pointer;letter-spacing:0;text-transform:none}
+  .cpitem:hover{background:var(--paper-2)}
+  .cpitem input{accent-color:var(--ink);margin:0}
+  .cpsw{width:9px;height:9px;border-radius:50%;background:var(--cc);flex-shrink:0}
   .card-thumb{width:100%;height:150px;object-fit:cover;object-position:top;display:block;border-bottom:1.5px solid var(--hair);filter:saturate(.95);background:var(--paper-2)}
   .toggles{margin-left:auto;display:inline-flex;gap:7px;align-items:center}
   .sort-toggle{display:none}                        /* só na versão admin */
@@ -264,7 +278,7 @@
 
 <nav class="filters">
   <div class="wrap">
-    <div class="frow"><span class="flbl">Categoria</span><div class="chips" id="catbar"></div><span class="hint">⇧ shift = somar · arraste um card p/ um chip = recategoriza</span></div>
+    <div class="frow"><span class="flbl">Categoria</span><div class="chips" id="catbar"></div><span class="hint">⇧ shift = somar · categorias no ▾ de cada card (máx. 2)</span></div>
     <div class="frow">
       <span class="flbl">Tipo</span><div class="chips" id="typebar"></div>
       <label class="search" id="searchbox">
@@ -311,6 +325,8 @@ const CATS={
   culture:{label:"Cultura",                     c:"var(--culture)"},
 };
 const CATKEYS=Object.keys(CATS);
+// um card pode ter 1 ou 2 categorias (r.cat = principal, r.cat2 = secundária opcional)
+const catsOf=r=>(r.cat2&&r.cat2!==r.cat&&CATS[r.cat2])?[r.cat,r.cat2]:[r.cat];
 const TYPES={repo:"Repos do Git",skill:"Skills do Claude",site:"Sites"};
 const TTAG={repo:"Repo Git",skill:"Skill",site:"Site"};
 
@@ -339,7 +355,7 @@ const tokenHdr = ()=> EDIT_TOKEN ? {"x-edit-token":EDIT_TOKEN} : {};
 const OKEY="refs-overrides";
 const overrides=FILE?JSON.parse(localStorage.getItem(OKEY)||"{}"):{};
 const saveOv=()=>localStorage.setItem(OKEY,JSON.stringify(overrides));
-if(FILE)REFS.forEach(r=>{const o=overrides[slug(r.title)]; if(o){ if(o.cat&&CATS[o.cat])r.cat=o.cat; if(Array.isArray(o.types))r.types=o.types; }});
+if(FILE)REFS.forEach(r=>{const o=overrides[slug(r.title)]; if(o){ if(o.cat&&CATS[o.cat])r.cat=o.cat; if("cat2" in o){ if(o.cat2&&CATS[o.cat2])r.cat2=o.cat2; else delete r.cat2; } if(Array.isArray(o.types))r.types=o.types; }});
 
 // refs criadas pela ferramenta (Gemini)
 const ADDKEY="refs-added";
@@ -348,7 +364,7 @@ const saveAdded=()=>localStorage.setItem(ADDKEY,JSON.stringify(added));
 if(FILE)added.forEach(a=>{ if(!REFS.some(r=>slug(r.title)===slug(a.title))) REFS.push(a); });
 
 // persistência
-function cleanRef(r){const o={title:r.title,url:r.url||"",cat:r.cat,src:r.src||"link",types:r.types||[]};if(r.items)o.items=r.items;o.desc=r.desc||"";o.date=r.date||SCAN_DATE;["thumb","source"].forEach(k=>{if(r[k])o[k]=r[k];});if(r.installed)o.installed=true;return o;}
+function cleanRef(r){const o={title:r.title,url:r.url||"",cat:r.cat,src:r.src||"link",types:r.types||[]};if(r.cat2&&r.cat2!==r.cat)o.cat2=r.cat2;if(r.items)o.items=r.items;o.desc=r.desc||"";o.date=r.date||SCAN_DATE;["thumb","source"].forEach(k=>{if(r[k])o[k]=r[k];});if(r.installed)o.installed=true;return o;}
 function buildData(){const meta=window.REFS_DATA||{};return{scanDate:SCAN_DATE,firstScan:meta.firstScan||SCAN_DATE,generated:new Date().toISOString().slice(0,10),sources:meta.sources||{videos:0,images:0},refs:REFS.filter(live).map(cleanRef)};}
 async function saveToServer(){const res=await fetch("/api/save",{method:"POST",headers:{"content-type":"application/json",...tokenHdr()},body:JSON.stringify(buildData())});if(!res.ok)throw new Error("HTTP "+res.status);}
 function persist(){if(SERVER)saveToServer().catch(e=>toast("Erro ao salvar: "+e.message));}
@@ -392,13 +408,13 @@ function toast(msg,undoFn){
   clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("show"),6000);
 }
 
-const mCat=r=>activeCats.size===0||activeCats.has(r.cat);
+const mCat=r=>activeCats.size===0||catsOf(r).some(c=>activeCats.has(c));
 const mType=r=>activeTypes.size===0||(r.types||[]).some(t=>activeTypes.has(t));
 const mSearch=r=>query===""||r._s.includes(query);
 const visible=r=>mCat(r)&&mType(r)&&mSearch(r)&&live(r);
 
 function buildFilters(){
-  const cc=k=>REFS.filter(r=>(k==="all"||r.cat===k)&&mType(r)&&mSearch(r)&&live(r)).length;
+  const cc=k=>REFS.filter(r=>(k==="all"||catsOf(r).includes(k))&&mType(r)&&mSearch(r)&&live(r)).length;
   const catActive=k=>k==="all"?activeCats.size===0:activeCats.has(k);
   let html=`<button class="chip${catActive("all")?' active':''}" data-cat="all">Tudo<span class="n">${cc("all")}</span></button>`;
   CATKEYS.forEach(k=>{html+=`<button class="chip cat${activeCats.has(k)?' active':''}" data-cat="${k}" style="--cc:${CATS[k].c}"><span class="swatch"></span>${CATS[k].label}<span class="n">${cc(k)}</span></button>`;});
@@ -422,6 +438,7 @@ let sortByDate=localStorage.getItem("refs-sort")==="date";   // ordenar por data
 const shotUrl=u=>"https://s.wordpress.com/mshots/v1/"+encodeURIComponent(u)+"?w=640&h=400";
 function card(r){
   const cat=CATS[r.cat]||{label:r.cat,c:"var(--ink)"};
+  const cat2=(r.cat2&&r.cat2!==r.cat&&CATS[r.cat2])?CATS[r.cat2]:null;
   const body=r.items
     ? `<p>${r.desc||""}</p><ul class="list">${r.items.map(x=>`<li>${x}</li>`).join("")}</ul>`
     : `<p>${r.desc||""}</p>`;
@@ -431,16 +448,18 @@ function card(r){
     : `<span class="local">${r.installed?'Skill instalada':'Mídia local'}</span>`;
   let thumbSrc=r.thumb||"";
   if(!thumbSrc&&showShots&&r.url&&/^https?:\/\//i.test(r.url)&&(r.types||[]).includes("site")) thumbSrc=shotUrl(r.url);
-  const thumb=thumbSrc?`<img class="card-thumb" src="${thumbSrc}" loading="lazy" alt="" draggable="false" onerror="this.style.display='none'">`:"";
+  const thumb=thumbSrc?`<img class="card-thumb" src="${thumbSrc}" loading="lazy" alt="" draggable="false" onerror="this.style.display='none'" onload="if(this.naturalWidth<60||this.naturalHeight<60)this.style.display='none'">`:"";
   const seal=r.installed?`<span class="card-seal" title="Skill instalada na sua máquina">✓ instalada</span>`:"";
-  return `<article class="card${r.installed?' is-installed':''}" id="c-${slug(r.title)}" data-slug="${slug(r.title)}" draggable="${canEdit()?'true':'false'}" style="--cc:${cat.c}">
+  const catTags=`<span class="tag">${cat.label}</span>`+(cat2?`<span class="tag" style="--cc:${cat2.c}">${cat2.label}</span>`:"");
+  const picker=canEdit()?`<details class="catpick"><summary title="Categorias (máx. 2)" aria-label="Editar categorias">▾</summary><div class="catpick-menu">${CATKEYS.map(k=>`<label class="cpitem"><input type="checkbox" data-catpick="${k}"${catsOf(r).includes(k)?" checked":""}><span class="cpsw" style="--cc:${CATS[k].c}"></span>${CATS[k].label}</label>`).join("")}</div></details>`:"";
+  return `<article class="card${r.installed?' is-installed':''}" id="c-${slug(r.title)}" data-slug="${slug(r.title)}" style="--cc:${cat.c};--cc2:${cat2?cat2.c:cat.c}">
     <div class="bar"></div>
     ${seal}
     ${thumb}
     <div class="pad">
       <div class="card-top">
         <h3>${r.url?`<a href="${r.url}" target="_blank" rel="noopener" draggable="false">${r.title}</a>`:r.title}</h3>
-        <div class="card-tags"><span class="tag">${cat.label}</span>${tags}</div>
+        <div class="card-tags">${catTags}${tags}${picker}</div>
       </div>
       ${body}
       <div class="card-foot">
@@ -475,7 +494,7 @@ function render(){
   const groups=CATKEYS.filter(k=>activeCats.size===0||activeCats.has(k));
   let html="",n=0;
   groups.forEach(k=>{
-    const items=REFS.filter(r=>r.cat===k&&mType(r)&&mSearch(r)&&live(r));
+    const items=REFS.filter(r=>catsOf(r).includes(k)&&mType(r)&&mSearch(r)&&live(r));
     if(!items.length)return;
     n++;
     html+=`<section class="section" style="--cc:${CATS[k].c}">
@@ -555,42 +574,24 @@ content.addEventListener("click",e=>{
   }
 });
 
-// ---- arrastar card para um chip de Categoria ou Tipo → recategoriza ----
-let dragSlug=null;
-content.addEventListener("dragstart",e=>{
-  const c=e.target.closest(".card"); if(!c)return;
-  dragSlug=c.dataset.slug; c.classList.add("dragging");
-  try{e.dataTransfer.setData("text/plain",dragSlug);e.dataTransfer.effectAllowed="move";}catch(_){}
+// ---- recategorização por dropdown em cada card (máx. 2 categorias) ----
+content.addEventListener("change",e=>{
+  const cb=e.target.closest("input[data-catpick]"); if(!cb)return;
+  const art=cb.closest(".card"); if(!art)return;
+  const r=REFS.find(x=>slug(x.title)===art.dataset.slug); if(!r)return;
+  const checked=[...art.querySelectorAll("input[data-catpick]:checked")].map(b=>b.dataset.catpick);
+  if(checked.length>2){ cb.checked=false; return; }   // no máximo duas
+  if(checked.length===0){ cb.checked=true; return; }  // no mínimo uma
+  r.cat=checked[0]; if(checked[1])r.cat2=checked[1]; else delete r.cat2;
+  r._s=norm([r.title,r.desc,catsOf(r).map(c=>CATS[c]&&CATS[c].label).join(" "),(r.types||[]).join(" "),r.url].join(" "));
+  // atualiza a tarja e as tags no card, sem fechar o menu
+  const c1=CATS[r.cat], c2=(r.cat2&&CATS[r.cat2])?CATS[r.cat2]:null;
+  art.style.setProperty("--cc",c1.c); art.style.setProperty("--cc2",c2?c2.c:c1.c);
+  const tw=art.querySelector(".card-tags"); if(tw){ tw.querySelectorAll(".tag").forEach(t=>t.remove());
+    tw.insertAdjacentHTML("afterbegin",`<span class="tag">${c1.label}</span>`+(c2?`<span class="tag" style="--cc:${c2.c}">${c2.label}</span>`:"")); }
+  if(SERVER){ persist(); } else { const o=overrides[art.dataset.slug]||(overrides[art.dataset.slug]={}); o.cat=r.cat; if(r.cat2)o.cat2=r.cat2; else delete o.cat2; saveOv(); }
+  buildFilters(); // atualiza os contadores das categorias (não fecha o menu)
 });
-content.addEventListener("dragend",e=>{
-  const c=e.target.closest(".card"); if(c)c.classList.remove("dragging");
-  dragSlug=null; document.querySelectorAll(".chip.drop-hover").forEach(x=>x.classList.remove("drop-hover"));
-});
-function applyMove(kind,val){
-  if(!dragSlug)return;
-  const r=REFS.find(x=>slug(x.title)===dragSlug); if(!r)return;
-  if(kind==="cat"){ if(r.cat===val)return; r.cat=val; toast("Movido para "+((CATS[val]&&CATS[val].label)||val)+"."); }
-  else{ r.types=[val]; toast("Tipo alterado para "+(TYPES[val]||val)+"."); }
-  r._s=norm([r.title,r.desc,CATS[r.cat]&&CATS[r.cat].label,(r.types||[]).join(" "),r.url].join(" "));
-  if(SERVER){ persist(); } else { const o=overrides[dragSlug]||(overrides[dragSlug]={}); if(kind==="cat")o.cat=val; else o.types=[val]; saveOv(); }
-  buildFilters(); render();
-}
-function setupDrop(bar,kind){
-  const sel=kind==="cat"?".chip.cat[data-cat]":".chip[data-type]";
-  bar.addEventListener("dragover",e=>{
-    if(!dragSlug)return; const chip=e.target.closest(sel); if(!chip)return;
-    e.preventDefault(); try{e.dataTransfer.dropEffect="move";}catch(_){}
-    bar.querySelectorAll(".drop-hover").forEach(x=>{if(x!==chip)x.classList.remove("drop-hover");});
-    chip.classList.add("drop-hover");
-  });
-  bar.addEventListener("dragleave",e=>{const chip=e.target.closest(".chip"); if(chip)chip.classList.remove("drop-hover");});
-  bar.addEventListener("drop",e=>{
-    if(!dragSlug)return; const chip=e.target.closest(sel); if(!chip)return;
-    e.preventDefault(); chip.classList.remove("drop-hover");
-    applyMove(kind, kind==="cat"?chip.dataset.cat:chip.dataset.type);
-  });
-}
-setupDrop(catbar,"cat"); setupDrop(typebar,"type");
 
 // ---------- Adicionar referência (Gemini via servidor /api/analyze) ----------
 const addUrl=document.getElementById("addUrl"),addUrlBtn=document.getElementById("addUrlBtn");
@@ -601,7 +602,7 @@ const syncRow=document.getElementById("syncRow"),pullBtn=document.getElementById
 const exportBtn=document.getElementById("exportBtn");
 function gstat(msg,load){addStatus.innerHTML=(load?'<span class="spin"></span>':"")+msg;}
 const CATLIST=Object.entries(CATS).map(([k,v])=>`${k} (${v.label})`).join(", ");
-const GPROMPT=`Você cataloga ferramentas, sites e recursos para um catálogo, em PORTUGUÊS. Produza UM objeto JSON com EXATAMENTE estes campos: "title" (nome curto oficial, ex.: "remove.bg"), "url" (URL oficial https; se for imagem, infira a URL oficial), "cat" (use EXATAMENTE uma destas CHAVES em minúsculo e nada além: ${Object.keys(CATS).join(", ")} — significados: ${CATLIST}), "types" (array só com valores exatos entre "site","repo","skill": github=repo, skill do Claude=skill, caso contrário "site"), "desc" (2 a 3 frases em português, analítico, sobre o que é e para que serve, sem copiar marketing). Responda SOMENTE com o objeto JSON válido, sem markdown e sem texto ao redor.`;
+const GPROMPT=`Você cataloga ferramentas, sites e recursos para um catálogo, em PORTUGUÊS. Produza UM objeto JSON com EXATAMENTE estes campos: "title" (nome curto oficial, ex.: "remove.bg"), "url" (URL oficial https; se for imagem, infira a URL oficial), "cat" (a categoria PRINCIPAL — use EXATAMENTE uma destas CHAVES em minúsculo: ${Object.keys(CATS).join(", ")} — significados: ${CATLIST}), "cat2" (OPCIONAL — uma segunda CHAVE diferente, só se o item claramente pertence a duas categorias; senão omita), "types" (array só com valores exatos entre "site","repo","skill": github=repo, skill do Claude=skill, caso contrário "site"), "desc" (2 a 3 frases em português, analítico, sobre o que é e para que serve, sem copiar marketing). Responda SOMENTE com o objeto JSON válido, sem markdown e sem texto ao redor.`;
 async function gemini(body){
   const res=await fetch("/api/analyze",{method:"POST",headers:{"content-type":"application/json",...tokenHdr()},body:JSON.stringify(body)});
   if(!res.ok){let t="";try{t=(await res.json()).error||"";}catch(_){} throw new Error("HTTP "+res.status+(t?" · "+t:""));}
@@ -652,15 +653,16 @@ const urlDupe=url=>!!url&&REFS.some(r=>cleanUrl(r.url)===cleanUrl(url)&&cleanUrl
 function makeRef(j,extra){
   const url=(j.url||(extra&&extra.source)||"").trim();
   const ref={title:(j.title||url||"Sem título").slice(0,120),url,cat:normCat(j.cat),src:"upload",types:normTypes(j.types),desc:(j.desc||"").slice(0,700),date:new Date().toISOString().slice(0,10),added:true};
+  if(j.cat2&&CATS[j.cat2]&&j.cat2!==ref.cat)ref.cat2=j.cat2;   // 2ª categoria opcional (IA)
   if(extra){ if(extra.thumb)ref.thumb=extra.thumb; if(extra.source)ref.source=extra.source; }
-  ref._s=norm([ref.title,ref.desc,CATS[ref.cat]&&CATS[ref.cat].label,(ref.types||[]).join(" "),ref.url].join(" "));
+  ref._s=norm([ref.title,ref.desc,catsOf(ref).map(c=>CATS[c]&&CATS[c].label).join(" "),(ref.types||[]).join(" "),ref.url].join(" "));
   return ref;
 }
 // prompt do ingest: catalogar múltiplas referências e evitar duplicatas (dedup semântico feito pelo Gemini)
 function ingestPrompt(){
   const existing=REFS.filter(live).map(r=>`- ${r.title}${r.url?" — "+r.url:""}`).join("\n");
   return `Você cataloga ferramentas, sites e recursos, em PORTUGUÊS, a partir de mídia de um post de rede social (slides de um carrossel OU o áudio de um vídeo).
-Para CADA referência DISTINTA e catalogável (um site, ferramenta, repositório, recurso ou ideia com nome/link próprio), produza um objeto com EXATAMENTE: "title" (nome curto oficial), "url" (URL oficial https da referência; se não houver, ""), "cat" (uma destas CHAVES em minúsculo: ${Object.keys(CATS).join(", ")} — significados: ${CATLIST}), "types" (array só entre "site","repo","skill"), "desc" (2 a 3 frases analíticas, sobre o que é e pra que serve).
+Para CADA referência DISTINTA e catalogável (um site, ferramenta, repositório, recurso ou ideia com nome/link próprio), produza um objeto com EXATAMENTE: "title" (nome curto oficial), "url" (URL oficial https da referência; se não houver, ""), "cat" (categoria PRINCIPAL — uma destas CHAVES em minúsculo: ${Object.keys(CATS).join(", ")} — significados: ${CATLIST}), "cat2" (OPCIONAL — segunda CHAVE diferente, só se pertencer claramente a duas; senão omita), "types" (array só entre "site","repo","skill"), "desc" (2 a 3 frases analíticas, sobre o que é e pra que serve).
 IGNORE slides/trechos puramente decorativos, de capa/texto, ou sem referência importante — não gere objeto pra eles. Se vários slides tratam da MESMA referência, gere só um objeto.
 NÃO duplique referências que JÁ existem no catálogo abaixo (se for essencialmente uma destas, ignore):
 ${existing||"(catálogo vazio)"}
