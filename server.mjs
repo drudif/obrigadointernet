@@ -272,6 +272,27 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(gres.status, { "content-type": "application/json" });
       return res.end(text);
     }
+    // ---- fallback: servidor busca a página (UA de navegador), extrai texto/meta e o Gemini estrutura ----
+    if (req.method === "POST" && req.url === "/api/readurl") {
+      if (!authed(req)) return json(res, 401, { ok: false, error: "não autorizado" });
+      if (!GEMINI_API_KEY) return json(res, 500, { ok: false, error: "GEMINI_API_KEY não configurada" });
+      const { url, prompt } = JSON.parse((await readBody(req)) || "{}");
+      if (!url) return json(res, 400, { ok: false, error: "url ausente" });
+      let html = "";
+      try {
+        const r = await fetch(url, { headers: { "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "accept": "text/html,*/*", "accept-language": "pt-BR,pt,en" }, redirect: "follow" });
+        html = await r.text();
+      } catch (e) { return json(res, 502, { ok: false, error: "não consegui abrir o site: " + e.message }); }
+      const m = parseMetas(html);
+      const title = decodeEnt(m["og:title"] || m["twitter:title"] || (html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1] || "");
+      const mdesc = decodeEnt(m["og:description"] || m["twitter:description"] || m["description"] || "");
+      const textBody = html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ").trim().slice(0, 3500);
+      if (!title && !mdesc && textBody.length < 40) return json(res, 422, { ok: false, error: "site sem conteúdo legível (pode exigir login ou bloquear robôs)" });
+      const ctx = `\n\nConteúdo do site (URL oficial: ${url}):\nTítulo: ${title}\nDescrição: ${mdesc}\nTexto: ${textBody}\n\nUse a URL oficial acima como "url".`;
+      const raw = await geminiCards([{ text: (prompt || "Produza {title,url,cat,types,desc}.") + ctx }]);
+      if (!raw) return json(res, 502, { ok: false, error: "Gemini não respondeu" });
+      return json(res, 200, { ok: true, raw });
+    }
     // ---- busca semântica PÚBLICA (sem senha): prompt montado no servidor, rate-limit por IP ----
     if (req.method === "POST" && req.url === "/api/semantic") {
       const ip = clientIp(req);

@@ -741,15 +741,24 @@ async function analyzeUrl(u){
   u=unproxyGoogle(u);
   if(isSocial(u))return ingest(u);
   gstat("Lendo o site com o Gemini…",1);
+  let raw="";
   try{
-    let raw=await gemini({contents:[{parts:[{text:GPROMPT+"\n\nURL para analisar (leia o conteúdo do site): "+u}]}],tools:[{url_context:{}}],generationConfig:{temperature:0.3,maxOutputTokens:8192,thinkingConfig:{thinkingBudget:0}}});
+    raw=await gemini({contents:[{parts:[{text:GPROMPT+"\n\nURL para analisar (leia o conteúdo do site): "+u}]}],tools:[{url_context:{}}],generationConfig:{temperature:0.3,maxOutputTokens:8192,thinkingConfig:{thinkingBudget:0}}});
     if(!parseCards(raw).length && String(raw||"").trim()){   // url_context devolveu prosa → estrutura numa 2ª chamada
       gstat("Estruturando…",1);
       raw=await gemini({contents:[{parts:[{text:GPROMPT+"\n\nCom base neste resumo do site (URL oficial: "+u+"), gere o card JSON:\n\n"+raw}]}],generationConfig:{temperature:0.3,maxOutputTokens:4096,responseMimeType:"application/json",thinkingConfig:{thinkingBudget:0}}});
     }
-    createFromResult(raw);
+  }catch(_){ raw=""; }   // url_context vazio/falhou → cai no fallback abaixo
+  if(!parseCards(raw).length){   // fallback: o servidor busca a página direto (UA de navegador)
+    try{
+      gstat("Tentando ler direto do servidor…",1);
+      const res=await fetch("/api/readurl",{method:"POST",headers:{"content-type":"application/json",...tokenHdr()},body:JSON.stringify({url:u,prompt:GPROMPT})});
+      const j=await res.json().catch(()=>({}));
+      if(res.ok&&j.ok) raw=j.raw;
+      else { gstat("Não consegui ler o site: "+((j&&j.error)||"bloqueou a leitura")+". Tente um print ou o repositório."); return; }
+    }catch(e){ gstat("Erro: "+e.message); return; }
   }
-  catch(e){gstat(/vazia/i.test(e.message)?"Não consegui ler o site (pode estar bloqueando leitura). Tente a URL oficial direta, um print, ou o repositório.":"Erro: "+e.message);}
+  createFromResult(raw);
 }
 // link social via Cobalt: carrossel (todos os slides) ou vídeo (áudio→transcrição) → vários cards, sem duplicatas.
 async function ingest(u){
