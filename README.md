@@ -32,9 +32,9 @@ Você **não** precisa preencher formulário, escrever descrição nem escolher 
 
 > 🔑 **Precisa de uma chave gratuita do Google Gemini** (a "IA"). Sem ela o catálogo funciona normalmente — você só adiciona os cards na mão. **Ligar a IA leva ~2 minutos**, veja a **[Parte 2](#parte-2--ligar-a-ia-o-digest-universal)**. *(Vídeo, áudio e carrossel de redes sociais também usam o Cobalt — opcional, [Parte 5](#parte-5--avançado-links-de-rede-social-com-o-cobalt).)*
 
-### 🖱️ Reclassificar é só ARRASTAR
+### 🖱️ Recategorizar é um clique — e um card pode ter até 2 categorias
 
-Colocou na categoria errada? Quer mudar o tipo? **Segure o card e solte em cima de outra bolinha de categoria ou de tipo** — pronto, recategorizado na hora. Nada de menu, formulário ou editar código. *(Aparece só para quem desbloqueou a edição com a senha.)*
+Colocou na categoria errada? Ou o card serve a duas áreas ao mesmo tempo? Em cada card há um **▾ discreto**: abre um menu com as categorias e você marca **até 2**. Quando são duas, a barra do topo (e a sombra no hover) viram um **degradê com as duas cores**, e o card aparece nas duas seções. Sem formulário, sem editar código. *(Aparece só para quem desbloqueou a edição com a senha.)*
 
 ---
 
@@ -59,7 +59,7 @@ Colocou na categoria errada? Quer mudar o tipo? **Segure o card e solte em cima 
 - **Catalogar** links em **9 categorias** (IA, Design, Tipografia, Assets, Inspo, Audiovisual, Produtividade/Self-hosted, Safety, Cultura) e **3 tipos** (Site, Repo, Skill).
 - **Buscar** e **filtrar** por categoria (clique = uma; `Shift`+clique = somar) e por tipo.
 - **Digest universal por IA** ⭐: jogue **URL, print, vídeo, áudio ou carrossel** — a IA lê e cria o card ([veja acima](#-os-dois-superpoderes)).
-- **Reclassificar arrastando** ⭐: pegue um card e solte em outra bolinha de categoria/tipo.
+- **Recategorizar num clique** ⭐: dropdown (▾) em cada card, até **2 categorias** (barra e hover em degradê).
 - **Editar na interface**: apagar cards (o ×) direto no catálogo.
 - **Prints da home** dos sites (liga/desliga), sem armazenar imagens.
 - **Selinho "instalada"** para destacar itens especiais.
@@ -153,7 +153,7 @@ Este é o **superpoder** do catálogo: colar qualquer coisa e a IA cria o card. 
    - **Solte um print / imagem** (ou clique para escolher) — se tiver várias ferramentas, cria vários cards.
    - **Cole um link de rede social** (Reel, TikTok, YouTube, carrossel do Instagram/LinkedIn) — *requer o Cobalt, [Parte 5](#parte-5--avançado-links-de-rede-social-com-o-cobalt)*. A IA **vê os quadros do vídeo e ouve o áudio**.
 3. Em poucos segundos o card aparece na categoria certa, com título e descrição escritos pela IA.
-4. **Não gostou de onde caiu?** Só **arrastar o card** para outra bolinha de categoria/tipo. Para remover, o **×**.
+4. **Não gostou de onde caiu?** Abra o **▾** do card e marque até **2 categorias**. Para remover o card, o **×**.
 
 > 🔒 A chave fica **só no servidor** — nunca aparece para quem visita o site. E o app **não guarda** os vídeos/áudios: ele lê, cataloga e descarta.
 
@@ -185,7 +185,7 @@ Cenário: você quer **um site privado que só você edita** e **um site públic
 
 O espelho:
 - mostra sempre os dados do original (atualiza sozinho);
-- **não tem** painel de adição, senha, botão de apagar nem arrastar;
+- **não tem** painel de adição, senha, botão de apagar nem o dropdown de recategorizar;
 - deixa os **prints dos sites sempre ligados**.
 
 ---
@@ -246,11 +246,12 @@ window.REFS_DATA = {
     {
       title: "remove.bg",             // nome curto
       url: "https://remove.bg",       // link ("" se não houver)
-      cat: "assets",                  // categoria (chave)
+      cat: "assets",                  // categoria principal (chave)
       types: ["site"],                // "site" | "repo" | "skill"
       desc: "2–3 frases sobre o que é e pra que serve.",
       date: "2026-01-01",
       // opcionais:
+      cat2: "design",                 // 2ª categoria (barra/hover em degradê)
       installed: true,                // mostra o selinho "instalada"
       thumb: "https://…/preview.jpg", // miniatura fixa
       items: ["item 1", "item 2"]     // vira lista no card
