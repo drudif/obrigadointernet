@@ -1,6 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15 15" shape-rendering="crispEdges">
-  <rect width="15" height="15" rx="3" fill="#f4efe6"/>
-  <g transform="translate(1,2)" fill="#e8551e">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 12">
+  <g transform="translate(2.6,0.5) skewX(-12)" fill="#e8551e" shape-rendering="crispEdges">
     <rect x="1" y="0" width="3" height="1"/><rect x="9" y="0" width="3" height="1"/>
     <rect x="0" y="1" width="5" height="1"/><rect x="8" y="1" width="5" height="1"/>
     <rect x="0" y="2" width="6" height="1"/><rect x="7" y="2" width="6" height="1"/>
