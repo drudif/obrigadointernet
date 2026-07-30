@@ -1,410 +1,602 @@
-// Servidor do catálogo REFS.
-// - Serve o site e o refs-data.js (do volume, se houver: DATA_DIR).
-// - POST /api/save   → grava refs-data.js (auth).
-// - POST /api/analyze → proxy do Gemini (chave só no servidor; auth).
-// - POST /api/auth   → valida a senha de edição.
-// Auth: LOCAL (sem PORT) é confiável e livre. No deploy (PORT definido) exige
-// header x-edit-token === EDIT_TOKEN. Sem EDIT_TOKEN no deploy = ninguém edita.
-// Uso local: duplo-clique em start.command (ou `npm start`).
+// Catálogo de Referências — servidor Node stdlib (sem framework, sem build).
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { exec, spawn } from "node:child_process";
+import { spawn, exec } from "node:child_process";
 import os from "node:os";
+
 let FFMPEG = "ffmpeg";
-try { const m = await import("ffmpeg-static"); if (m.default) FFMPEG = m.default; } catch { /* usa o do PATH */ }
+try {
+  const mod = await import("ffmpeg-static");
+  if (mod?.default) FFMPEG = mod.default;
+} catch {}
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 
-// carrega .env local (se existir), sem depender de flag do Node (compat. c/ qualquer versão)
-try {
+// --- .env loader (manual, sem dependência) ---
+(function loadEnv() {
   const envPath = path.join(DIR, ".env");
-  if (fs.existsSync(envPath)) {
-    for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
-      const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
-      if (m && process.env[m[1]] === undefined) {
-        let v = m[2].trim();
-        if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
-        process.env[m[1]] = v;
-      }
+  if (!fs.existsSync(envPath)) return;
+  const src = fs.readFileSync(envPath, "utf8");
+  for (const line of src.split("\n")) {
+    const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)\s*$/);
+    if (!m) continue;
+    const key = m[1];
+    let val = m[2];
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+      val = val.slice(1, -1);
     }
+    if (process.env[key] === undefined) process.env[key] = val;
   }
-} catch { /* ignore */ }
+})();
 
+// --- config ---
 const PORT = process.env.PORT || 4177;
+const RAILWAY = !!process.env.PORT;
 const HOST = process.env.PORT ? "0.0.0.0" : "127.0.0.1";
-const RAILWAY = !!process.env.PORT;                       // plataforma define PORT
-const DATA_DIR = process.env.DATA_DIR || DIR;             // volume persistente no deploy
+const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : DIR;
 const EDIT_TOKEN = process.env.EDIT_TOKEN || "";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
-const DEPLOY_URL = (process.env.DEPLOY_URL || "").replace(/\/+$/, ""); // p/ sync local↔deploy
-const COBALT_API = (process.env.COBALT_API || "").replace(/\/+$/, ""); // instância self-hosted (rede privada)
+const DEPLOY_URL = (process.env.DEPLOY_URL || "").replace(/\/$/, "");
+const COBALT_API = (process.env.COBALT_API || "").replace(/\/$/, "");
 const COBALT_KEY = process.env.COBALT_KEY || "";
-// espelho somente-leitura: lê os dados de outro deploy (MIRROR_URL) e bloqueia toda edição.
-const MIRROR_URL = (process.env.MIRROR_URL || "").replace(/\/+$/, "");
+const MIRROR_URL = (process.env.MIRROR_URL || "").replace(/\/$/, "");
 const READ_ONLY = process.env.READ_ONLY === "1" || !!MIRROR_URL;
-const GMODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";     // configurável (chaves novas não acessam 2.5-flash)
-const GEMINI_THINKING = process.env.GEMINI_THINKING !== "0";       // alguns modelos (flash-latest) não aceitam thinkingBudget:0
+const GMODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const GEMINI_THINKING = process.env.GEMINI_THINKING !== "0";
 const DATA_FILE = path.join(DATA_DIR, "refs-data.js");
 
-// seed do volume: na primeira vez copia o refs-data.js do repo para o volume
-try {
-  if (DATA_DIR !== DIR && !fs.existsSync(DATA_FILE) && fs.existsSync(path.join(DIR, "refs-data.js"))) {
+// --- volume seed (primeiro boot) ---
+if (DATA_DIR !== DIR) {
+  try {
     fs.mkdirSync(DATA_DIR, { recursive: true });
-    fs.copyFileSync(path.join(DIR, "refs-data.js"), DATA_FILE);
-    console.log("volume seedado com refs-data.js do repo");
+    const repoSeed = path.join(DIR, "refs-data.js");
+    if (!fs.existsSync(DATA_FILE) && fs.existsSync(repoSeed)) {
+      fs.copyFileSync(repoSeed, DATA_FILE);
+    }
+  } catch (e) {
+    console.error("[seed] falhou:", e.message);
   }
-} catch (e) { console.error("seed falhou:", e.message); }
+}
 
 const TYPES = {
-  ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
-  ".json": "application/json", ".css": "text/css", ".svg": "image/svg+xml",
-  ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
-  ".webp": "image/webp", ".mp4": "video/mp4", ".md": "text/markdown; charset=utf-8",
-  ".woff2": "font/woff2", ".woff": "font/woff", ".ttf": "font/ttf", ".otf": "font/otf",
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".ico": "image/x-icon",
 };
 
-function authed(req) {
-  if (READ_ONLY) return false;            // espelho: ninguém edita, ponto
-  if (!RAILWAY) return true;              // local = confiável
-  if (!EDIT_TOKEN) return false;          // deploy sem senha configurada = ninguém edita
-  return req.headers["x-edit-token"] === EDIT_TOKEN;
-}
-// cache do espelho: busca o refs-data.js do deploy original (MIRROR_URL) a cada 30s
-let mirrorCache = { ts: 0, body: "" };
-async function getMirrorData() {
-  const now = Date.now();
-  if (mirrorCache.body && now - mirrorCache.ts < 30000) return mirrorCache.body;
-  try {
-    const r = await fetch(MIRROR_URL + "/refs-data.js", { headers: { "cache-control": "no-store" } });
-    if (r.ok) { const t = await r.text(); mirrorCache = { ts: now, body: t }; return t; }
-  } catch { /* usa o cache anterior */ }
-  return mirrorCache.body || "window.REFS_DATA = {scanDate:\"\",sources:{videos:0,images:0},refs:[]};\n";
-}
-function readBody(req, limit = 25e6) {
-  return new Promise((resolve, reject) => {
-    let b = ""; req.on("data", (c) => { b += c; if (b.length > limit) req.destroy(); });
-    req.on("end", () => resolve(b)); req.on("error", reject);
+function serveStatic(req, res) {
+  let p = decodeURIComponent(new URL(req.url, "http://x").pathname);
+  if (p === "/") p = "/index.html";
+  let fp, root;
+  if (p === "/refs-data.js") {
+    fp = DATA_FILE;
+    root = path.normalize(DATA_DIR);
+  } else {
+    fp = path.join(DIR, p);
+    root = path.normalize(DIR);
+  }
+  const resolved = path.normalize(fp);
+  if (!resolved.startsWith(root)) {
+    res.writeHead(403);
+    return res.end("forbidden");
+  }
+  fs.readFile(resolved, (err, buf) => {
+    if (err) {
+      res.writeHead(404);
+      return res.end("not found");
+    }
+    const ext = path.extname(resolved).toLowerCase();
+    res.writeHead(200, {
+      "content-type": TYPES[ext] || "application/octet-stream",
+      "cache-control": "no-store",
+    });
+    res.end(buf);
   });
 }
-function json(res, code, obj) { res.writeHead(code, { "content-type": "application/json" }); res.end(JSON.stringify(obj)); }
 
-// rate limit por IP p/ endpoints públicos (busca semântica)
+function json(res, code, obj) {
+  res.writeHead(code, { "content-type": "application/json; charset=utf-8" });
+  res.end(JSON.stringify(obj));
+}
+
+// --- auth: pivô local (sem senha) vs deploy (x-edit-token) vs espelho (nunca) ---
+function authed(req) {
+  if (READ_ONLY) return false;
+  if (!RAILWAY) return true;
+  if (!EDIT_TOKEN) return false;
+  return req.headers["x-edit-token"] === EDIT_TOKEN;
+}
+
+function readBody(req, limit = 25e6) {
+  return new Promise((resolve, reject) => {
+    let size = 0;
+    const chunks = [];
+    req.on("data", (c) => {
+      size += c.length;
+      if (size > limit) {
+        req.socket.destroy();
+        reject(new Error("payload too large"));
+        return;
+      }
+      chunks.push(c);
+    });
+    req.on("end", () => {
+      const raw = Buffer.concat(chunks).toString("utf8");
+      try {
+        resolve(raw ? JSON.parse(raw) : {});
+      } catch (e) {
+        reject(new Error("invalid json"));
+      }
+    });
+    req.on("error", reject);
+  });
+}
+
+function saveRefsData(data) {
+  const text = `/* Dados do catálogo. Editado pelo servidor (auto-save) ou manualmente. */\nwindow.REFS_DATA = ${JSON.stringify(data, null, 2)};\n`;
+  const tmp = DATA_FILE + ".tmp";
+  fs.writeFileSync(tmp, text);
+  fs.renameSync(tmp, DATA_FILE);
+}
+
+// --- rate limit + cache da busca semântica (em memória, sem persistência) ---
 const rlHits = new Map();
-const semCache = new Map(); // cache de respostas da busca semântica (pergunta -> {ts, raw})
+function clientIp(req) {
+  return (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.socket.remoteAddress || "?";
+}
 function rateOk(ip, max = 12, winMs = 5 * 60 * 1000) {
   const now = Date.now();
-  const arr = (rlHits.get(ip) || []).filter((t) => now - t < winMs);
-  if (arr.length >= max) { rlHits.set(ip, arr); return false; }
-  arr.push(now); rlHits.set(ip, arr); return true;
-}
-function clientIp(req) { return String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.socket.remoteAddress || "?"; }
-
-// ---- og-scrape: lê meta tags do post (og:image/título/descrição). Não baixa mídia. ----
-function decodeEnt(s) { return (s || "").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&#x27;/gi, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">"); }
-function parseMetas(html) {
-  const m = {};
-  const re = /<meta[^>]+>/gi; let t;
-  while ((t = re.exec(html))) {
-    const tag = t[0];
-    const p = (tag.match(/(?:property|name)\s*=\s*["']([^"']+)["']/i) || [])[1];
-    const c = (tag.match(/content\s*=\s*["']([^"']*)["']/i) || [])[1];
-    if (p && c != null && m[p] == null) m[p] = c;
+  const hits = (rlHits.get(ip) || []).filter((t) => now - t < winMs);
+  if (hits.length >= max) {
+    rlHits.set(ip, hits);
+    return false;
   }
-  return m;
+  hits.push(now);
+  rlHits.set(ip, hits);
+  return true;
 }
-async function ogScrape(url) {
-  const r = await fetch(url, { headers: { "user-agent": "Mozilla/5.0 (compatible; ToolsCatalog/1.0; +https://feedderefs.up.railway.app)" }, redirect: "follow" });
-  const html = await r.text();
-  const m = parseMetas(html);
+const semCache = new Map();
+const SEM_TTL = 6 * 60 * 60 * 1000;
+const SEM_CAP = 500;
+
+const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
+
+function decodeEnt(s) {
+  return (s || "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;/g, "'")
+    .replace(/&nbsp;/g, " ");
+}
+
+function parseMetas(html) {
+  const metas = {};
+  const re = /<meta\s+[^>]*>/gi;
+  let m;
+  while ((m = re.exec(html))) {
+    const tag = m[0];
+    const prop = tag.match(/(?:property|name)=["']([^"']+)["']/i)?.[1];
+    const content = tag.match(/content=["']([^"']*)["']/i)?.[1];
+    if (prop && content !== undefined && !(prop in metas)) metas[prop] = decodeEnt(content);
+  }
   return {
-    image: decodeEnt(m["og:image"] || m["twitter:image"] || m["twitter:image:src"] || ""),
-    title: decodeEnt(m["og:title"] || m["twitter:title"] || ""),
-    desc: decodeEnt(m["og:description"] || m["twitter:description"] || ""),
+    title: metas["og:title"] || metas["twitter:title"] || "",
+    desc: metas["og:description"] || metas["twitter:description"] || metas["description"] || "",
+    image: metas["og:image"] || metas["twitter:image"] || "",
   };
 }
-// resolve um link social via Cobalt (self-hosted, rede privada). NÃO armazena nada.
+
+async function ogScrape(url) {
+  const r = await fetch(url, { headers: { "user-agent": UA } });
+  if (!r.ok) throw new Error(`fetch falhou: ${r.status}`);
+  const html = await r.text();
+  const meta = parseMetas(html);
+  const titleTag = html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1];
+  if (!meta.title && titleTag) meta.title = decodeEnt(titleTag.trim());
+  return meta;
+}
+
 async function cobalt(url, options = {}) {
-  const headers = { accept: "application/json", "content-type": "application/json" };
-  if (COBALT_KEY) headers.authorization = "Api-Key " + COBALT_KEY;
-  const r = await fetch(COBALT_API + "/", { method: "POST", headers, body: JSON.stringify({ url, ...options }) });
-  return r.json();
+  const r = await fetch(COBALT_API + "/", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json",
+      ...(COBALT_KEY ? { authorization: `Api-Key ${COBALT_KEY}` } : {}),
+    },
+    body: JSON.stringify({ url, ...options }),
+  });
+  const j = await r.json();
+  if (!r.ok) throw new Error(j?.error?.code || `cobalt http ${r.status}`);
+  return j;
 }
-async function fetchBuf(url, cap = 20 * 1024 * 1024) {
-  const r = await fetch(url); if (!r.ok) throw new Error("fetch " + r.status);
+
+async function fetchBuf(url, cap = 20e6) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`fetch falhou: ${r.status}`);
   const buf = Buffer.from(await r.arrayBuffer());
-  if (buf.length > cap) throw new Error("mídia grande demais (" + Math.round(buf.length / 1e6) + "MB)");
-  return { buf, mime: (r.headers.get("content-type") || "application/octet-stream").split(";")[0] };
+  if (buf.length > cap) throw new Error(`arquivo maior que o limite (${cap} bytes)`);
+  return { buf, mime: r.headers.get("content-type") || "" };
 }
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-function run(cmd, args) { // resolve com {code, err} — quem chama decide o que fazer
-  return new Promise((resolve, reject) => {
-    const p = spawn(cmd, args); let err = "";
-    p.stderr.on("data", (d) => { err += d; });
-    p.on("error", reject);
+
+function run(cmd, args) {
+  return new Promise((resolve) => {
+    const p = spawn(cmd, args);
+    let err = "";
+    p.stderr.on("data", (d) => (err += d));
+    p.on("error", (e) => resolve({ code: -1, err: e.message }));
     p.on("close", (code) => resolve({ code, err }));
   });
 }
-// vídeo → frames (texto na tela) + áudio (transcrição), via ffmpeg. Modalidades confiáveis. Nada é guardado.
+
+// --- pipeline de vídeo: extrai frames+áudio via ffmpeg, monta parts pro Gemini ---
 async function videoParts(buf) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reel-"));
-  const inp = path.join(dir, "in.mp4");
-  fs.writeFileSync(inp, buf);
-  const parts = []; let diag = "";
-  const jpgs = () => fs.readdirSync(dir).filter((f) => /\.jpg$/.test(f)).sort();
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "refs-video-"));
   try {
-    let r = await run(FFMPEG, ["-nostdin", "-y", "-i", inp, "-vf", "fps=1,scale=720:-2", "-frames:v", "14", "-q:v", "4", path.join(dir, "f_%03d.jpg")]);
-    if (!jpgs().length) { // fallback: amostra por cena/posição
-      const r2 = await run(FFMPEG, ["-nostdin", "-y", "-i", inp, "-vf", "thumbnail,scale=720:-2", "-frames:v", "6", path.join(dir, "t_%03d.jpg")]);
-      diag = `fps(code ${r.code}): ${r.err.slice(-160)} | thumb(code ${r2.code}): ${r2.err.slice(-160)}`;
+    const src = path.join(tmp, "in.mp4");
+    fs.writeFileSync(src, buf);
+
+    const framesDir = path.join(tmp, "frames");
+    fs.mkdirSync(framesDir);
+    await run(FFMPEG, ["-i", src, "-vf", "fps=1,scale=720:-2", "-frames:v", "14", path.join(framesDir, "f%02d.jpg")]);
+    let frameFiles = fs.readdirSync(framesDir).filter((f) => f.endsWith(".jpg")).sort();
+
+    if (frameFiles.length === 0) {
+      // fallback: 6 frames por scene-sample (thumbnails)
+      await run(FFMPEG, ["-i", src, "-vf", "select='gt(scene,0.1)',scale=720:-2", "-frames:v", "6", "-vsync", "vfr", path.join(framesDir, "s%02d.jpg")]);
+      frameFiles = fs.readdirSync(framesDir).filter((f) => f.endsWith(".jpg")).sort();
     }
-    for (const f of jpgs()) { const b = fs.readFileSync(path.join(dir, f)); parts.push({ inline_data: { mime_type: "image/jpeg", data: b.toString("base64") } }); }
-    const ra = await run(FFMPEG, ["-nostdin", "-y", "-i", inp, "-vn", "-ac", "1", "-b:a", "96k", path.join(dir, "a.mp3")]);
-    try { const a = fs.readFileSync(path.join(dir, "a.mp3")); if (a.length > 2000) parts.push({ inline_data: { mime_type: "audio/mp3", data: a.toString("base64") } }); } catch { void ra; }
-  } finally { try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* ignore */ } }
-  const nFrames = parts.filter((p) => p.inline_data.mime_type.startsWith("image/")).length;
-  console.log("videoParts: bytes=" + buf.length + " frames=" + nFrames + (diag ? " | " + diag : ""));
-  if (!nFrames) throw new Error("0 frames (vídeo " + buf.length + "B) " + diag.slice(0, 200));
-  return parts;
-}
-// sobe um arquivo (vídeo) via Files API do Gemini e espera ficar ACTIVE. Retorna file_uri.
-async function geminiUpload(buf, mime, displayName = "media") {
-  const base = "https://generativelanguage.googleapis.com";
-  const start = await fetch(`${base}/upload/v1beta/files?key=${encodeURIComponent(GEMINI_API_KEY)}`, {
-    method: "POST",
-    headers: { "X-Goog-Upload-Protocol": "resumable", "X-Goog-Upload-Command": "start", "X-Goog-Upload-Header-Content-Length": String(buf.length), "X-Goog-Upload-Header-Content-Type": mime, "content-type": "application/json" },
-    body: JSON.stringify({ file: { display_name: displayName } }),
-  });
-  const uploadUrl = start.headers.get("x-goog-upload-url");
-  if (!uploadUrl) { const t = await start.text().catch(() => ""); throw new Error("start " + start.status + " " + t.slice(0, 140)); }
-  const up = await fetch(uploadUrl, { method: "POST", headers: { "Content-Length": String(buf.length), "X-Goog-Upload-Offset": "0", "X-Goog-Upload-Command": "upload, finalize" }, body: buf });
-  const upText = await up.text();
-  let info; try { info = JSON.parse(upText); } catch { throw new Error("finalize não-JSON " + up.status + " " + upText.slice(0, 140)); }
-  if (!info.file) throw new Error("finalize " + up.status + " " + JSON.stringify(info).slice(0, 140));
-  let { name, state, uri } = info.file;
-  for (let i = 0; i < 40 && state === "PROCESSING"; i++) {
-    await sleep(1500);
-    const st = await (await fetch(`${base}/v1beta/${name}?key=${encodeURIComponent(GEMINI_API_KEY)}`)).json();
-    state = st.state; uri = st.uri || uri;
+    if (frameFiles.length === 0) throw new Error("não consegui extrair frames do vídeo");
+
+    const parts = frameFiles.map((f) => ({
+      inline_data: { mime_type: "image/jpeg", data: fs.readFileSync(path.join(framesDir, f)).toString("base64") },
+    }));
+
+    const audioPath = path.join(tmp, "a.mp3");
+    await run(FFMPEG, ["-i", src, "-vn", "-ac", "1", "-b:a", "96k", audioPath]);
+    if (fs.existsSync(audioPath) && fs.statSync(audioPath).size > 2000) {
+      parts.push({ inline_data: { mime_type: "audio/mp3", data: fs.readFileSync(audioPath).toString("base64") } });
+    }
+
+    return parts;
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
   }
-  if (state !== "ACTIVE") throw new Error("estado " + (state || "?"));
-  return uri;
 }
-// uma chamada multimodal ao Gemini que devolve {cards:[...]}. Thinking desligado + retry em erro transitório.
+
+const TRANSIENT = new Set([429, 500, 502, 503, 504]);
+const BACKOFF = [1500, 3000, 4500, 6000];
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+// --- chamada compartilhada ao Gemini (generateContent), sem SDK ---
 async function geminiCards(parts) {
-  const gc = { temperature: 0.3, maxOutputTokens: 8192, responseMimeType: "application/json" };
-  if (GEMINI_THINKING) gc.thinkingConfig = { thinkingBudget: 0 };   // só onde o modelo aceita
-  const body = { contents: [{ parts }], generationConfig: gc };
-  const TRANSIENT = new Set([429, 500, 502, 503, 504]);
-  let lastErr = "";
-  for (let attempt = 0; attempt < 5; attempt++) {
-    if (attempt) await sleep(1500 * attempt); // 1.5s, 3s, 4.5s, 6s
-    let gr, gj;
+  const body = {
+    contents: [{ parts }],
+    generationConfig: {
+      temperature: 0.3,
+      maxOutputTokens: 8192,
+      responseMimeType: "application/json",
+      ...(GEMINI_THINKING ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
+    },
+  };
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GMODEL}:generateContent?key=${GEMINI_API_KEY}`;
+  let lastErr;
+  for (let attempt = 0; attempt <= BACKOFF.length; attempt++) {
     try {
-      gr = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GMODEL}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
-      gj = await gr.json().catch(() => ({}));
-    } catch (e) { lastErr = "rede: " + e.message; continue; }
-    if (gj.error) {
-      const code = Number(gj.error.code || gr.status);
-      lastErr = "Gemini " + code + ": " + String(gj.error.message || "").slice(0, 200);
-      if (TRANSIENT.has(code)) continue;        // sobrecarga/cota → tenta de novo
-      throw new Error(lastErr);                 // erro permanente → aborta
-    }
-    const cand = (gj.candidates || [])[0];
-    const text = (((cand || {}).content || {}).parts || []).map((p) => p.text).filter(Boolean).join("");
-    if (text) return text;
-    lastErr = "Gemini retornou vazio" + (cand && cand.finishReason ? " (finishReason: " + cand.finishReason + ")" : " (sem candidato)");
-  }
-  throw new Error(lastErr + " — tente novamente em instantes");
-}
-
-function serveStatic(req, res) {
-  let p = decodeURIComponent(req.url.split("?")[0]);
-  if (p === "/" || p === "") p = "/index.html";
-  const fp = p === "/refs-data.js" ? DATA_FILE : path.join(DIR, p); // dados vêm do volume
-  if (!fp.startsWith(DIR) && fp !== DATA_FILE) { res.writeHead(403); return res.end(); }
-  fs.readFile(fp, (e, d) => {
-    if (e) { res.writeHead(404); return res.end("not found"); }
-    res.writeHead(200, { "content-type": TYPES[path.extname(fp).toLowerCase()] || "application/octet-stream", "cache-control": "no-store" });
-    res.end(d);
-  });
-}
-
-const server = http.createServer(async (req, res) => {
-  try {
-    // espelho: serve os dados do deploy original (sempre sincronizado)
-    if (MIRROR_URL && (req.url === "/refs-data.js" || req.url.startsWith("/refs-data.js?"))) {
-      const body = await getMirrorData();
-      res.writeHead(200, { "content-type": "text/javascript; charset=utf-8", "cache-control": "no-store" });
-      return res.end(body);
-    }
-    if (req.method === "GET" && req.url === "/api/health") {
-      return json(res, 200, { ok: true, railway: RAILWAY, hasEditToken: !!EDIT_TOKEN, hasGeminiKey: !!GEMINI_API_KEY, usingVolume: DATA_DIR !== DIR, dataDir: DATA_DIR, hasCobalt: !!COBALT_API, readOnly: READ_ONLY, mirror: !!MIRROR_URL, semantic: (!!GEMINI_API_KEY || !!MIRROR_URL) });
-    }
-    if (req.method === "POST" && req.url === "/api/auth") {
-      const { token } = JSON.parse((await readBody(req)) || "{}");
-      return json(res, 200, { ok: !RAILWAY || (!!EDIT_TOKEN && token === EDIT_TOKEN) });
-    }
-    if (req.method === "POST" && req.url === "/api/save") {
-      if (!authed(req)) return json(res, 401, { ok: false, error: "não autorizado" });
-      const data = JSON.parse((await readBody(req)) || "{}");
-      if (!data || !Array.isArray(data.refs)) return json(res, 400, { ok: false, error: "payload inválido" });
-      const js = "/* Atualizado automaticamente pelo catálogo (server.mjs). */\nwindow.REFS_DATA = " + JSON.stringify(data, null, 2) + ";\n";
-      const tmp = path.join(DATA_DIR, ".refs-data.tmp.js");
-      fs.writeFileSync(tmp, js); fs.renameSync(tmp, DATA_FILE);
-      console.log(new Date().toLocaleTimeString(), "salvo — " + data.refs.length + " refs");
-      return json(res, 200, { ok: true, count: data.refs.length });
-    }
-    if (req.method === "POST" && req.url === "/api/analyze") {
-      if (!authed(req)) return json(res, 401, { ok: false, error: "não autorizado" });
-      if (!GEMINI_API_KEY) return json(res, 500, { ok: false, error: "GEMINI_API_KEY não configurada no servidor" });
-      const body = (await readBody(req)) || "{}";
-      const TRANSIENT = new Set([429, 500, 502, 503, 504]);
-      let gres, text = "";
-      for (let attempt = 0; attempt < 4; attempt++) {
-        if (attempt) await sleep(1500 * attempt); // 1.5s, 3s, 4.5s
-        gres = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GMODEL}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`,
-          { method: "POST", headers: { "content-type": "application/json" }, body });
-        text = await gres.text();
-        if (!TRANSIENT.has(gres.status)) break; // erro transitório → tenta de novo
-      }
-      res.writeHead(gres.status, { "content-type": "application/json" });
-      return res.end(text);
-    }
-    // ---- fallback: servidor busca a página (UA de navegador), extrai texto/meta e o Gemini estrutura ----
-    if (req.method === "POST" && req.url === "/api/readurl") {
-      if (!authed(req)) return json(res, 401, { ok: false, error: "não autorizado" });
-      if (!GEMINI_API_KEY) return json(res, 500, { ok: false, error: "GEMINI_API_KEY não configurada" });
-      const { url, prompt } = JSON.parse((await readBody(req)) || "{}");
-      if (!url) return json(res, 400, { ok: false, error: "url ausente" });
-      let html = "";
-      try {
-        const r = await fetch(url, { headers: { "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36", "accept": "text/html,*/*", "accept-language": "pt-BR,pt,en" }, redirect: "follow" });
-        html = await r.text();
-      } catch (e) { return json(res, 502, { ok: false, error: "não consegui abrir o site: " + e.message }); }
-      const m = parseMetas(html);
-      const title = decodeEnt(m["og:title"] || m["twitter:title"] || (html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1] || "");
-      const mdesc = decodeEnt(m["og:description"] || m["twitter:description"] || m["description"] || "");
-      const textBody = html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ").trim().slice(0, 3500);
-      if (!title && !mdesc && textBody.length < 40) return json(res, 422, { ok: false, error: "site sem conteúdo legível (pode exigir login ou bloquear robôs)" });
-      const ctx = `\n\nConteúdo do site (URL oficial: ${url}):\nTítulo: ${title}\nDescrição: ${mdesc}\nTexto: ${textBody}\n\nUse a URL oficial acima como "url".`;
-      const raw = await geminiCards([{ text: (prompt || "Produza {title,url,cat,types,desc}.") + ctx }]);
-      if (!raw) return json(res, 502, { ok: false, error: "Gemini não respondeu" });
-      return json(res, 200, { ok: true, raw });
-    }
-    // ---- busca semântica PÚBLICA (sem senha): prompt montado no servidor, rate-limit por IP ----
-    if (req.method === "POST" && req.url === "/api/semantic") {
-      const ip = clientIp(req);
-      if (!rateOk(ip)) return json(res, 429, { ok: false, error: "muitas buscas — aguarde um pouco" });
-      let body; try { body = JSON.parse((await readBody(req)) || "{}"); } catch { body = {}; }
-      const q = String(body.q || "").slice(0, 300).trim();
-      if (!q) return json(res, 400, { ok: false, error: "pergunta vazia" });
-      // sem chave local mas com espelho → encaminha pro original (a chave fica num lugar só)
-      if (!GEMINI_API_KEY && MIRROR_URL) {
-        try {
-          const r = await fetch(MIRROR_URL + "/api/semantic", { method: "POST", headers: { "content-type": "application/json", "x-forwarded-for": ip }, body: JSON.stringify({ q }) });
-          const t = await r.text(); res.writeHead(r.status, { "content-type": "application/json" }); return res.end(t);
-        } catch { return json(res, 502, { ok: false, error: "upstream indisponível" }); }
-      }
-      if (!GEMINI_API_KEY) return json(res, 400, { ok: false, error: "busca semântica indisponível" });
-      let catText = "", nRefs = 0;
-      try {
-        const src = MIRROR_URL ? await getMirrorData() : fs.readFileSync(DATA_FILE, "utf8");
-        const w = {}; new Function("window", src)(w);
-        const refs = (w.REFS_DATA && w.REFS_DATA.refs) || [];
-        nRefs = refs.length;
-        catText = refs.map((r) => `"${String(r.title || "").replace(/"/g, "'")}" [${r.cat}${(r.types || []).length ? "/" + r.types.join(",") : ""}] ${String(r.desc || "").slice(0, 220)}${r.url ? " (" + r.url + ")" : ""}`).join("\n");
-      } catch { return json(res, 500, { ok: false, error: "catálogo indisponível" }); }
-      // cache: pergunta normalizada + tamanho do catálogo (muda se cards forem add/removidos). TTL 6h.
-      const ckey = q.toLowerCase().replace(/\s+/g, " ").trim() + "|" + nRefs;
-      const hit = semCache.get(ckey);
-      if (hit && Date.now() - hit.ts < 6 * 3600 * 1000) return json(res, 200, { ok: true, raw: hit.raw, cached: true });
-      const prompt = `Você é um assistente de busca semântica de um catálogo de ferramentas, sites e recursos, em PORTUGUÊS. Responda à pergunta de forma útil e direta (2 a 5 frases), recomendando os itens mais adequados pelo NOME, com base APENAS no catálogo abaixo. Depois liste os títulos EXATOS dos itens relevantes, do mais para o menos relevante (máx. 12). Se nada servir, diga isso e devolva matches vazio.\n\nCATÁLOGO:\n${catText}\n\nPERGUNTA: ${q}\n\nResponda SOMENTE em JSON: {"answer":"...","matches":["título exato",...]}`;
-      let raw; try { raw = await geminiCards([{ text: prompt }]); } catch (e) { return json(res, 502, { ok: false, error: e.message }); }
-      semCache.set(ckey, { ts: Date.now(), raw });
-      if (semCache.size > 500) semCache.delete(semCache.keys().next().value); // limita o cache
-      return json(res, 200, { ok: true, raw });
-    }
-    // ---- ingerir link social via Cobalt: carrossel (todos os slides) ou vídeo (áudio→transcrição).
-    //      NÃO armazena mídia. O Gemini devolve {cards:[...]} já filtrado e sem duplicatas. ----
-    if (req.method === "POST" && req.url === "/api/ingest") {
-      if (!authed(req)) return json(res, 401, { ok: false, error: "não autorizado" });
-      if (!GEMINI_API_KEY) return json(res, 500, { ok: false, error: "GEMINI_API_KEY não configurada" });
-      if (!COBALT_API) return json(res, 400, { ok: false, error: "COBALT_API não configurada (Cobalt fora do ar)" });
-      const { url, prompt } = JSON.parse((await readBody(req)) || "{}");
-      if (!url) return json(res, 400, { ok: false, error: "url ausente" });
-
-      // 1) resolve o link no Cobalt
-      let cj; try { cj = await cobalt(url); } catch (e) { return json(res, 502, { ok: false, error: "cobalt inacessível: " + e.message }); }
-
-      // 2) monta as partes multimodais + descreve o modo
-      const parts = []; let kind = "image", note = "";
-      try {
-        if (cj.status === "picker" && Array.isArray(cj.picker)) {
-          const photos = cj.picker.filter((p) => p.type === "photo" && p.url).slice(0, 20);
-          if (!photos.length) return json(res, 422, { ok: false, error: "carrossel sem imagens legíveis" });
-          kind = "carousel";
-          for (const p of photos) { const { buf, mime } = await fetchBuf(p.url, 8 * 1024 * 1024); parts.push({ inline_data: { mime_type: mime.startsWith("image/") ? mime : "image/jpeg", data: buf.toString("base64") } }); }
-          parts.push({ text: `${prompt}\n\n== ENTRADA: ${photos.length} SLIDES de um carrossel (na ordem). ==` });
-        } else if (cj.status === "tunnel" || cj.status === "redirect" || (cj.status === "picker" && cj.picker.some((p) => p.type === "video"))) {
-          // vídeo → frames (texto na tela) + áudio (fala) via ffmpeg. 480p p/ baixar leve. Nada é guardado.
-          kind = "video";
-          let vurl = "";
-          try { const vj = await cobalt(url, { videoQuality: "480" }); vurl = (vj.status === "tunnel" || vj.status === "redirect") ? vj.url : ((vj.picker || []).find((p) => p.type === "video") || {}).url || ""; } catch { /* usa o cj abaixo */ }
-          if (!vurl) vurl = (cj.status === "tunnel" || cj.status === "redirect") ? cj.url : ((cj.picker || []).find((p) => p.type === "video") || {}).url || "";
-          if (!vurl) return json(res, 502, { ok: false, error: "não consegui obter o vídeo (" + (cj.error?.code || cj.status || "?") + ")" });
-          let vid; try { vid = await fetchBuf(vurl, 120 * 1024 * 1024); } catch (e) { return json(res, 413, { ok: false, error: "vídeo " + e.message }); }
-          console.log("ingest video:", url, "| cobalt=" + cj.status, "| vurl=" + (vurl ? "sim" : "não"), "| bytes=" + vid.buf.length, "| mime=" + vid.mime);
-          let media; try { media = await videoParts(vid.buf); } catch (e) { return json(res, 502, { ok: false, error: "processamento do vídeo (ffmpeg): " + e.message }); }
-          if (!media.length) return json(res, 502, { ok: false, error: "não consegui extrair frames do vídeo" });
-          for (const m of media) parts.push(m);
-          const og = await ogScrape(url).catch(() => ({}));
-          const cap = [og.title && "Legenda/título: " + og.title, og.desc && "Descrição do post: " + og.desc].filter(Boolean).join("\n");
-          parts.push({ text: `${prompt}\n\n== ENTRADA: FRAMES (imagens em ordem cronológica) de um VÍDEO curto + o ÁUDIO dele. Leia o TEXTO QUE APARECE NA TELA (overlays, nomes de sites/ferramentas/URLs exibidos) e TAMBÉM ouça a fala. Capte TODOS os sites, ferramentas e recursos citados ou mostrados — muitos aparecem só como texto na tela.${cap ? "\n\n" + cap : ""} ==` });
-        } else {
-          return json(res, 422, { ok: false, error: "cobalt não resolveu o link (" + (cj.error?.code || cj.status || "?") + ")" });
+      const r = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) {
+        if (TRANSIENT.has(r.status) && attempt < BACKOFF.length) {
+          await sleep(BACKOFF[attempt]);
+          continue;
         }
-      } catch (e) { return json(res, 502, { ok: false, error: "falha ao baixar mídia do cobalt: " + e.message }); }
-
-      // 3) uma chamada ao Gemini → {cards:[...]}
-      let raw; try { raw = await geminiCards(parts); } catch (e) { return json(res, 502, { ok: false, error: e.message }); }
-      return json(res, 200, { ok: true, kind, raw, source: url });
-    }
-    // ---- sync local ↔ deploy (só no local) ----
-    if (req.method === "POST" && (req.url === "/api/pull" || req.url === "/api/push")) {
-      if (RAILWAY) return json(res, 403, { ok: false, error: "sync só funciona no servidor local" });
-      if (!DEPLOY_URL) return json(res, 400, { ok: false, error: "DEPLOY_URL não configurada no .env" });
-      if (req.url === "/api/pull") {
-        const r = await fetch(DEPLOY_URL + "/refs-data.js", { headers: { "cache-control": "no-store" } });
-        if (!r.ok) return json(res, 502, { ok: false, error: "deploy respondeu HTTP " + r.status });
-        const txt = await r.text();
-        const w = {}; new Function("window", txt)(w);
-        if (!w.REFS_DATA || !Array.isArray(w.REFS_DATA.refs)) return json(res, 502, { ok: false, error: "refs-data.js inválido no deploy" });
-        const tmp = path.join(DATA_DIR, ".refs-data.tmp.js"); fs.writeFileSync(tmp, txt); fs.renameSync(tmp, DATA_FILE);
-        return json(res, 200, { ok: true, count: w.REFS_DATA.refs.length });
-      } else { // push
-        const token = (JSON.parse((await readBody(req)) || "{}").token) || EDIT_TOKEN;
-        if (!token) return json(res, 400, { ok: false, error: "informe a senha de edição do deploy" });
-        const local = fs.readFileSync(DATA_FILE, "utf8");
-        const w = {}; new Function("window", local)(w);
-        const r = await fetch(DEPLOY_URL + "/api/save", { method: "POST", headers: { "content-type": "application/json", "x-edit-token": token }, body: JSON.stringify(w.REFS_DATA) });
-        const rt = await r.text();
-        res.writeHead(r.status, { "content-type": "application/json" }); return res.end(rt);
+        throw new Error(`gemini http ${r.status}: ${await r.text()}`);
       }
+      const j = await r.json();
+      const cand = j.candidates?.[0];
+      const text = (cand?.content?.parts || []).map((p) => p.text || "").join("");
+      if (!text) throw new Error(`gemini vazio (finishReason=${cand?.finishReason || "?"})`);
+      return text;
+    } catch (e) {
+      lastErr = e;
+      if (attempt < BACKOFF.length && !/gemini http/.test(e.message)) {
+        await sleep(BACKOFF[attempt]);
+        continue;
+      }
+      if (/gemini http/.test(e.message)) throw e;
     }
-    serveStatic(req, res);
-  } catch (err) {
-    json(res, 500, { ok: false, error: String(err && err.message || err) });
   }
+  throw lastErr;
+}
+
+// --- modo espelho: reflete refs-data.js de outro deploy, TTL 30s ---
+let mirrorCache = { text: "", at: 0 };
+async function getMirrorData() {
+  if (Date.now() - mirrorCache.at < 30000 && mirrorCache.text) return mirrorCache.text;
+  const r = await fetch(MIRROR_URL + "/refs-data.js");
+  if (!r.ok) throw new Error("mirror fetch failed: " + r.status);
+  const text = await r.text();
+  mirrorCache = { text, at: Date.now() };
+  return text;
+}
+
+export { videoParts, fetchBuf };
+
+const server = http.createServer((req, res) => {
+  (async () => {
+    try {
+      const u = new URL(req.url, "http://x");
+
+      if (MIRROR_URL && u.pathname === "/refs-data.js") {
+        const text = await getMirrorData();
+        res.writeHead(200, { "content-type": "text/javascript; charset=utf-8", "cache-control": "no-store" });
+        return res.end(text);
+      }
+
+      if (req.method === "GET" && u.pathname === "/api/health") {
+        return json(res, 200, {
+          ok: true,
+          railway: RAILWAY,
+          hasEditToken: !!EDIT_TOKEN,
+          hasGeminiKey: !!GEMINI_API_KEY,
+          usingVolume: DATA_DIR !== DIR,
+          dataDir: DATA_DIR,
+          hasCobalt: !!COBALT_API,
+          readOnly: READ_ONLY,
+          mirror: !!MIRROR_URL,
+          semantic: !!GEMINI_API_KEY || !!MIRROR_URL,
+        });
+      }
+
+      if (req.method === "POST" && u.pathname === "/api/auth") {
+        const body = await readBody(req);
+        const ok = !RAILWAY || (!!EDIT_TOKEN && body.token === EDIT_TOKEN);
+        return json(res, 200, { ok });
+      }
+
+      if (req.method === "POST" && u.pathname === "/api/save") {
+        if (!authed(req)) return json(res, 401, { ok: false, error: "não autenticado" });
+        const data = await readBody(req);
+        if (!Array.isArray(data.refs)) return json(res, 400, { ok: false, error: "refs deve ser um array" });
+        saveRefsData(data);
+        return json(res, 200, { ok: true, count: data.refs.length });
+      }
+
+      if (req.method === "POST" && u.pathname === "/api/analyze") {
+        if (!authed(req)) return json(res, 401, { ok: false, error: "não autenticado" });
+        if (!GEMINI_API_KEY) return json(res, 400, { ok: false, error: "GEMINI_API_KEY não configurada" });
+        const body = await readBody(req);
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${GMODEL}:generateContent?key=${GEMINI_API_KEY}`;
+        for (let attempt = 0; attempt < 4; attempt++) {
+          const r = await fetch(url, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          if (r.ok || !TRANSIENT.has(r.status) || attempt === 3) {
+            const text = await r.text();
+            res.writeHead(r.status, { "content-type": "application/json; charset=utf-8" });
+            return res.end(text);
+          }
+          await sleep(BACKOFF[attempt]);
+        }
+      }
+
+      if (req.method === "POST" && u.pathname === "/api/readurl") {
+        if (!authed(req)) return json(res, 401, { ok: false, error: "não autenticado" });
+        if (!GEMINI_API_KEY) return json(res, 400, { ok: false, error: "GEMINI_API_KEY não configurada" });
+        const { url: pageUrl, prompt } = await readBody(req);
+        let html;
+        try {
+          const r = await fetch(pageUrl, { headers: { "user-agent": UA } });
+          if (!r.ok) throw new Error(`http ${r.status}`);
+          html = await r.text();
+        } catch (e) {
+          return json(res, 502, { ok: false, error: "não consegui buscar a URL: " + e.message });
+        }
+        const meta = parseMetas(html);
+        const stripped = html
+          .replace(/<script[\s\S]*?<\/script>/gi, "")
+          .replace(/<style[\s\S]*?<\/style>/gi, "")
+          .replace(/<[^>]+>/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        const body = decodeEnt(stripped).slice(0, 3500);
+        if (!meta.title && !meta.desc && body.length < 200) {
+          return json(res, 422, { ok: false, error: "conteúdo insuficiente (página bloqueada/exige login?)" });
+        }
+        const ctx = `\n\nTítulo: ${meta.title}\nDescrição: ${meta.desc}\nConteúdo: ${body}`;
+        try {
+          const raw = await geminiCards([{ text: (prompt || "") + ctx }]);
+          return json(res, 200, { ok: true, raw });
+        } catch (e) {
+          return json(res, 500, { ok: false, error: e.message });
+        }
+      }
+
+      if (req.method === "POST" && u.pathname === "/api/semantic") {
+        const ip = clientIp(req);
+        if (!rateOk(ip)) return json(res, 429, { ok: false, error: "muitas perguntas, espere um pouco" });
+        const { q } = await readBody(req);
+        const query = String(q || "").slice(0, 300).trim();
+        if (!query) return json(res, 400, { ok: false, error: "pergunta vazia" });
+
+        if (!GEMINI_API_KEY && MIRROR_URL) {
+          const r = await fetch(MIRROR_URL + "/api/semantic", {
+            method: "POST",
+            headers: { "content-type": "application/json", "x-forwarded-for": ip },
+            body: JSON.stringify({ q: query }),
+          });
+          const text = await r.text();
+          res.writeHead(r.status, { "content-type": "application/json; charset=utf-8" });
+          return res.end(text);
+        }
+        if (!GEMINI_API_KEY) return json(res, 400, { ok: false, error: "busca semântica indisponível" });
+
+        let src;
+        if (MIRROR_URL) src = await getMirrorData();
+        else src = fs.readFileSync(DATA_FILE, "utf8");
+        const w = {};
+        new Function("window", src)(w);
+        const refs = w.REFS_DATA?.refs || [];
+
+        const ckey = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") + "|" + refs.length;
+        const cached = semCache.get(ckey);
+        if (cached && Date.now() - cached.at < SEM_TTL) return json(res, 200, { ok: true, raw: cached.raw });
+
+        const catalog = refs
+          .map((r) => `- ${r.title} [${[r.cat, ...(r.cat2 ? [r.cat2] : [])].join(",")}/${(r.types || []).join(",")}] ${(r.desc || "").slice(0, 220)} (${r.url || ""})`)
+          .join("\n");
+        const prompt = `Você é o assistente de busca de um catálogo pessoal de referências. Responda a pergunta do usuário SOMENTE com base no catálogo abaixo, em 2 a 5 frases, em português. Depois liste os títulos exatos dos itens do catálogo que respondem à pergunta.\n\nCatálogo:\n${catalog}\n\nPergunta: ${query}\n\nResponda em JSON: {"answer": "...", "matches": ["título exato 1", "título exato 2"]}`;
+
+        try {
+          const raw = await geminiCards([{ text: prompt }]);
+          if (semCache.size >= SEM_CAP) semCache.delete(semCache.keys().next().value);
+          semCache.set(ckey, { raw, at: Date.now() });
+          return json(res, 200, { ok: true, raw });
+        } catch (e) {
+          return json(res, 500, { ok: false, error: e.message });
+        }
+      }
+
+      if (req.method === "POST" && u.pathname === "/api/ingest") {
+        if (!authed(req)) return json(res, 401, { ok: false, error: "não autenticado" });
+        if (!GEMINI_API_KEY) return json(res, 400, { ok: false, error: "GEMINI_API_KEY não configurada" });
+        if (!COBALT_API) return json(res, 400, { ok: false, error: "COBALT_API não configurada" });
+        const { url: srcUrl, prompt } = await readBody(req);
+
+        let cj;
+        try {
+          cj = await cobalt(srcUrl);
+        } catch (e) {
+          return json(res, 502, { ok: false, error: "cobalt falhou: " + e.message });
+        }
+
+        const pickerVideo = cj.status === "picker" && (cj.picker || []).some((it) => it.type === "video");
+        const pickerPhotos = cj.status === "picker" ? (cj.picker || []).filter((it) => it.type === "photo") : [];
+
+        let parts = [];
+        let kind;
+
+        if (cj.status === "picker" && pickerPhotos.length && !pickerVideo) {
+          kind = "carousel";
+          const photos = pickerPhotos.slice(0, 20);
+          if (!photos.length) return json(res, 422, { ok: false, error: "cobalt não retornou fotos" });
+          for (const item of photos) {
+            try {
+              const { buf, mime } = await fetchBuf(item.url, 8e6);
+              parts.push({ inline_data: { mime_type: mime || "image/jpeg", data: buf.toString("base64") } });
+            } catch {}
+          }
+          if (!parts.length) return json(res, 422, { ok: false, error: "não consegui baixar as fotos do carrossel" });
+          parts.push({ text: `Isto é um carrossel de ${parts.length} slides (nesta ordem). Considere cada slide que mostrar uma referência distinta.` });
+        } else if (cj.status === "tunnel" || cj.status === "redirect" || pickerVideo) {
+          kind = "video";
+          let videoUrl = cj.url;
+          try {
+            const cj2 = await cobalt(srcUrl, { videoQuality: "480" });
+            if (cj2.url) videoUrl = cj2.url;
+            else if (pickerVideo) videoUrl = (cj2.picker || cj.picker).find((it) => it.type === "video")?.url || videoUrl;
+          } catch {}
+          if (!videoUrl) return json(res, 502, { ok: false, error: "cobalt não retornou URL de vídeo" });
+          let buf;
+          try {
+            ({ buf } = await fetchBuf(videoUrl, 120e6));
+          } catch (e) {
+            return json(res, 413, { ok: false, error: "download do vídeo falhou: " + e.message });
+          }
+          try {
+            parts = await videoParts(buf);
+          } catch (e) {
+            return json(res, 502, { ok: false, error: e.message });
+          }
+          try {
+            const meta = await ogScrape(srcUrl);
+            if (meta.title || meta.desc) parts.push({ text: `Legenda/contexto do post: ${meta.title} ${meta.desc}` });
+          } catch {}
+        } else {
+          return json(res, 422, { ok: false, error: "cobalt não resolveu o link" });
+        }
+
+        parts.push({ text: prompt || "" });
+        try {
+          const raw = await geminiCards(parts);
+          return json(res, 200, { ok: true, kind, raw, source: srcUrl });
+        } catch (e) {
+          return json(res, 500, { ok: false, error: e.message });
+        }
+      }
+
+      if (req.method === "POST" && u.pathname === "/api/pull") {
+        if (RAILWAY) return json(res, 403, { ok: false, error: "só disponível localmente" });
+        if (!DEPLOY_URL) return json(res, 400, { ok: false, error: "DEPLOY_URL não configurada" });
+        const r = await fetch(DEPLOY_URL + "/refs-data.js");
+        if (!r.ok) return json(res, 502, { ok: false, error: "falha ao buscar o deploy: " + r.status });
+        const text = await r.text();
+        const w = {};
+        try {
+          new Function("window", text)(w);
+          if (!Array.isArray(w.REFS_DATA?.refs)) throw new Error("shape inválido");
+        } catch (e) {
+          return json(res, 502, { ok: false, error: "dado do deploy inválido: " + e.message });
+        }
+        const tmp = DATA_FILE + ".tmp";
+        fs.writeFileSync(tmp, text);
+        fs.renameSync(tmp, DATA_FILE);
+        return json(res, 200, { ok: true, count: w.REFS_DATA.refs.length });
+      }
+
+      if (req.method === "POST" && u.pathname === "/api/push") {
+        if (RAILWAY) return json(res, 403, { ok: false, error: "só disponível localmente" });
+        if (!DEPLOY_URL) return json(res, 400, { ok: false, error: "DEPLOY_URL não configurada" });
+        const body = await readBody(req);
+        const token = body.token || EDIT_TOKEN;
+        const localText = fs.readFileSync(DATA_FILE, "utf8");
+        const w = {};
+        new Function("window", localText)(w);
+        const r = await fetch(DEPLOY_URL + "/api/save", {
+          method: "POST",
+          headers: { "content-type": "application/json", "x-edit-token": token },
+          body: JSON.stringify(w.REFS_DATA),
+        });
+        const text = await r.text();
+        res.writeHead(r.status, { "content-type": "application/json; charset=utf-8" });
+        return res.end(text);
+      }
+
+      return serveStatic(req, res);
+    } catch (e) {
+      json(res, 500, { ok: false, error: e.message });
+    }
+  })();
 });
 
 server.listen(PORT, HOST, () => {
-  if (RAILWAY) {
-    console.log("REFS catalog (deploy) na porta " + PORT + (MIRROR_URL ? " — ESPELHO read-only de " + MIRROR_URL : READ_ONLY ? " — somente leitura" : EDIT_TOKEN ? " — edição com senha" : " — somente leitura (sem EDIT_TOKEN)"));
+  const url = `http://${HOST === "0.0.0.0" ? "localhost" : HOST}:${PORT}`;
+  if (MIRROR_URL) {
+    console.log(`[espelho] ${url} — refletindo ${MIRROR_URL}`);
+  } else if (READ_ONLY) {
+    console.log(`[somente-leitura] ${url}`);
+  } else if (RAILWAY) {
+    console.log(`[deploy] ${url} — edição ${EDIT_TOKEN ? "protegida por senha" : "desligada (sem EDIT_TOKEN)"}`);
   } else {
-    const url = "http://localhost:" + PORT;
-    console.log("REFS catalog em " + url + " — edição livre, refs-data.js auto-salvo. (Ctrl+C encerra.)");
-    exec('open "' + url + '"');
+    console.log(`[local] ${url} — edição livre`);
+    exec(`open ${url}`, () => {});
   }
 });

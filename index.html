@@ -12,14 +12,13 @@
   @import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap');
 
   :root{
-    --paper:#f4efe6;        /* off-white quente */
-    --paper-2:#faf6ee;      /* superfície de card no hover */
-    --ink:#191512;          /* quase-preto quente */
-    --ink-2:#4c463d;        /* secundário */
-    --ink-3:#8a8272;        /* meta / faint */
-    --line:#191512;         /* borda brutalista */
-    --hair:#d8d0c0;         /* hairline suave */
-    /* categorias: hues bem separados — vermelho, laranja, âmbar, esmeralda, lima, ciano, violeta, magenta */
+    --paper:#f4efe6;
+    --paper-2:#faf6ee;
+    --ink:#191512;
+    --ink-2:#4c463d;
+    --ink-3:#8a8272;
+    --line:#191512;
+    --hair:#d8d0c0;
     --ai:#7c3aed;      --design:#e8551e;  --type:#d61f2b;   --assets:#1f9d54;
     --inspo:#2f6ae0;   --av:#0e8ba0;      --self:#c07d0a;   --sec:#b0208f;    --culture:#5b8c00;
     --serif:"DM Serif Display",Georgia,"Times New Roman",serif;
@@ -36,7 +35,6 @@
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(20px,4vw,44px)}
   .mono{font-variant-numeric:tabular-nums;letter-spacing:.02em}
 
-  /* ---------- HEADER ---------- */
   header{padding:clamp(44px,6vw,80px) 0 26px;border-bottom:1.5px solid var(--line)}
   .head-row{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
   .credit-eyebrow{display:none;font-size:11px;letter-spacing:.04em;color:var(--ink-3);font-weight:600;margin-bottom:20px}
@@ -53,7 +51,6 @@
   .meta{text-align:right;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);line-height:1.9}
   .meta b{color:var(--ink);font-weight:700}
   .meta .live{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--self);margin-right:6px;vertical-align:middle}
-  /* box do repo (só no espelho, no lugar do "último scan") */
   .repo-box{display:none;align-items:center;gap:9px;border:1.5px solid var(--line);border-radius:12px;padding:8px 13px 8px 12px;
     text-align:left;text-transform:none;letter-spacing:0;color:var(--ink);transition:background .15s,color .15s;margin-bottom:6px}
   .repo-box:hover{background:var(--ink);color:var(--paper)}
@@ -63,7 +60,6 @@
   .repo-url{font-size:10.5px;font-weight:600;color:var(--ink-3)}
   .repo-box:hover .repo-url{color:rgba(244,239,230,.72)}
 
-  /* ---------- FILTROS ---------- */
   .filters{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1.5px solid var(--line)}
   .filters .wrap{padding:14px clamp(20px,4vw,44px);display:flex;flex-direction:column;gap:11px}
   .frow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -90,7 +86,6 @@
   .rc{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:700;white-space:nowrap}
   .hint{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:700;opacity:.75}
 
-  /* ---------- SEÇÕES ---------- */
   main{padding:20px 0 60px}
   .section{padding-top:clamp(46px,6vw,74px)}
   .section-head{display:flex;align-items:baseline;gap:16px;padding-bottom:16px;margin-bottom:24px;
@@ -101,7 +96,6 @@
   .section-head .count{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
 
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
-  /* wrapper: segura o extrude (não recortado); o card interno recorta o conteúdo */
   .card-wrap{position:relative;display:flex;border-radius:var(--r)}
   .card-wrap::after{content:"";position:absolute;inset:0;border-radius:var(--r);background:linear-gradient(135deg,var(--cc),var(--cc2));z-index:-1;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s cubic-bezier(.2,.9,.3,1)}
   .card-wrap:hover::after{opacity:1;transform:translate(9px,9px)}
@@ -110,7 +104,6 @@
     position:relative;top:0;left:0;border-radius:var(--r);overflow:hidden;
     transition:top .18s cubic-bezier(.2,.9,.3,1),left .18s cubic-bezier(.2,.9,.3,1),background .18s}
   .card .bar{height:5px;background:linear-gradient(90deg,var(--cc) 0%,var(--cc) 42%,var(--cc2) 58%,var(--cc2) 100%)}
-  /* dropdown discreto de categorias (máx. 2) — substitui o arrastar */
   .catpick{position:relative;margin-left:auto}
   .catpick>summary{list-style:none;cursor:pointer;width:20px;height:20px;border:1.5px solid var(--hair);border-radius:999px;
     display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink-3);line-height:1;user-select:none;opacity:.55;transition:opacity .15s,border-color .15s,color .15s}
@@ -126,7 +119,7 @@
   .cpsw{width:9px;height:9px;border-radius:50%;background:var(--cc);flex-shrink:0}
   .card-thumb{width:100%;height:150px;object-fit:cover;object-position:top;display:block;border-bottom:1.5px solid var(--hair);filter:saturate(.95);background:var(--paper-2)}
   .toggles{margin-left:auto;display:inline-flex;gap:7px;align-items:center}
-  .sort-toggle{display:none}                        /* só na versão admin */
+  .sort-toggle{display:none}
   .sort-toggle .dotmini,.shots-toggle .dotmini{width:7px;height:7px;border-radius:50%;background:var(--ink-3);display:inline-block;transition:background .15s}
   .sort-toggle.on,.shots-toggle.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
   .sort-toggle.on .dotmini,.shots-toggle.on .dotmini{background:var(--self)}
@@ -165,7 +158,6 @@
   footer .wrap{padding:34px clamp(20px,4vw,44px) 64px;font-size:12px;letter-spacing:.04em;color:var(--ink-3);font-weight:600}
   footer b{color:var(--ink-2)}
 
-  /* exclusão de cards */
   .foot-right{display:inline-flex;align-items:center;gap:11px}
   .del{border:1.5px solid var(--hair);background:transparent;color:var(--ink-3);width:22px;height:22px;border-radius:999px;
     font-size:15px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
@@ -183,12 +175,9 @@
     padding:6px 15px;font-family:var(--sans);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
   .toast button:hover{background:rgba(244,239,230,.12)}
 
-  /* drag & drop de recategorização */
-  .card[draggable="true"]{cursor:grab}
-  .card.dragging{opacity:.4;cursor:grabbing}
-  .chip.drop-hover{outline:2px dashed var(--ink);outline-offset:3px;background:var(--paper-2)}
+  .card.flash{animation:cardflash 1.8s ease}
+  @keyframes cardflash{0%,100%{box-shadow:none}20%,60%{box-shadow:0 0 0 3px var(--cc)}}
 
-  /* busca semântica (fundo laranja da paleta) */
   .sem{background:var(--design);border-bottom:1.5px solid var(--line);display:none}
   .sem .wrap{padding:clamp(18px,2.4vw,28px) clamp(20px,4vw,44px)}
   .sem-label{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:rgba(244,239,230,.85);margin-bottom:12px}
@@ -209,7 +198,6 @@
   .sem-answer .spin{width:13px;height:13px;border:2px solid rgba(244,239,230,.4);border-top-color:var(--paper);border-radius:50%;display:inline-block;vertical-align:-2px;margin-right:8px;animation:refspin .7s linear infinite}
   .sem-count{margin:26px 0 4px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
 
-  /* adicionar referência (Gemini) */
   .adder{border-bottom:1.5px solid var(--line);background:var(--paper);display:none}
   .adder .wrap{padding:clamp(20px,2.6vw,30px) clamp(20px,4vw,44px)}
   .adder-head{font-family:var(--sans);font-weight:700;font-size:clamp(20px,2.4vw,30px);letter-spacing:-.02em;
@@ -323,539 +311,679 @@
 
 <script src="refs-data.js"></script>
 <script>
-/* ============================================================
-   VIEW — cards. Categoria: clique = seleção única; shift = somar.
-   Tipo: múltiplo. + Busca. Descrição analítica sempre visível.
-   ============================================================ */
-const DATA=(window.REFS_DATA)||{scanDate:"",sources:{videos:0,images:0},refs:[]};
-const SCAN_DATE=DATA.scanDate||"";
-const REFS=DATA.refs||[];
+(function () {
+"use strict";
 
-const CATS={
-  assets: {label:"Assets",                     c:"var(--assets)"},
-  inspo:  {label:"Inspo",                       c:"var(--inspo)"},
-  av:     {label:"Audiovisual",                 c:"var(--av)"},
-  design: {label:"Design / UI",                c:"var(--design)"},
-  ai:     {label:"IA / Agentes",               c:"var(--ai)"},
-  type:   {label:"Tipografia",                 c:"var(--type)"},
-  self:   {label:"Produtividade / Self-hosted", c:"var(--self)"},
-  sec:    {label:"Safety",                      c:"var(--sec)"},
-  culture:{label:"Cultura",                     c:"var(--culture)"},
+// ---------- dados + constantes ----------
+const DATA = window.REFS_DATA || { scanDate: "", sources: { videos: 0, images: 0 }, refs: [] };
+const SCAN_DATE = DATA.scanDate || "";
+const REFS = DATA.refs || [];
+
+const CATS = {
+  assets:  { label: "Assets",                        c: "var(--assets)" },
+  inspo:   { label: "Inspo",                          c: "var(--inspo)" },
+  av:      { label: "Audiovisual",                    c: "var(--av)" },
+  design:  { label: "Design / UI",                    c: "var(--design)" },
+  ai:      { label: "IA / Agentes",                   c: "var(--ai)" },
+  type:    { label: "Tipografia",                     c: "var(--type)" },
+  self:    { label: "Produtividade / Self-hosted",     c: "var(--self)" },
+  sec:     { label: "Safety",                         c: "var(--sec)" },
+  culture: { label: "Cultura",                        c: "var(--culture)" },
 };
-const CATKEYS=Object.keys(CATS);
-// um card pode ter 1 ou 2 categorias (r.cat = principal, r.cat2 = secundária opcional)
-const catsOf=r=>(r.cat2&&r.cat2!==r.cat&&CATS[r.cat2])?[r.cat,r.cat2]:[r.cat];
-const TYPES={repo:"Repos do Git",skill:"Skills do Claude",site:"Sites"};
-const TTAG={repo:"Repo Git",skill:"Skill",site:"Site"};
+const CATKEYS = Object.keys(CATS);
+const TYPES = { repo: "Repos do Git", skill: "Skills do Claude", site: "Sites" };
+const TTAG = { repo: "Repo Git", skill: "Skill", site: "Site" };
 
-const norm=s=>(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
-function fmtDate(iso){if(!iso)return"—";const m=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];const[y,mo,d]=iso.split("-");return `${(+d)} ${m[+mo-1]} ${y}`;}
-const br=iso=>iso?iso.split("-").reverse().join("."):"";
-const pad2=n=>String(n).padStart(2,"0");
-const slug=s=>(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/&/g," e ").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").replace(/-+/g,"-").slice(0,60);
+const catsOf = (r) => (r.cat2 && r.cat2 !== r.cat && CATS[r.cat2]) ? [r.cat, r.cat2] : [r.cat];
+const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+const slug = (s) => norm(s).replace(/&/g, " e ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").replace(/-+/g, "-").slice(0, 60);
+const pad2 = (n) => String(n).padStart(2, "0");
+const MONTHS = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+function fmtDate(iso) {
+  if (!iso) return "—";
+  const [y, mo, d] = iso.split("-");
+  return `${+d} ${MONTHS[+mo - 1]} ${y}`;
+}
+const br = (iso) => (iso ? iso.split("-").reverse().join(".") : "");
 
-// Modos: FILE (file://) · LOCALSRV (localhost) · DEPLOY (público, edição por senha).
-const FILE = location.protocol==="file:";
-const HTTP = location.protocol==="http:"||location.protocol==="https:";
-const LOCALSRV = HTTP && (location.hostname==="localhost"||location.hostname==="127.0.0.1");
+// ---------- modo (file / local / deploy) ----------
+const FILE = location.protocol === "file:";
+const HTTP = location.protocol === "http:" || location.protocol === "https:";
+const LOCALSRV = HTTP && (location.hostname === "localhost" || location.hostname === "127.0.0.1");
 const DEPLOY = HTTP && !LOCALSRV;
-const SERVER = HTTP;                  // salva/analisa via API do servidor
-let EDIT_TOKEN = DEPLOY ? (sessionStorage.getItem("edit-token")||"") : "";
-let unlocked = !DEPLOY || !!EDIT_TOKEN;               // local/file: livre; deploy: precisa senha
-let READONLY = false;                                 // espelho: sem edição nenhuma (setado via /api/health)
-let SEMANTIC = false;                                 // busca semântica disponível no servidor (via /api/health)
-let healthKnown = !DEPLOY;                             // no deploy, espera o /api/health antes de revelar o painel
-const canEdit = ()=> !READONLY && (FILE || LOCALSRV || (DEPLOY && unlocked));   // deletar/arrastar
-const canAdd  = ()=> !READONLY && (LOCALSRV || (DEPLOY && unlocked));           // adder (Gemini precisa do servidor)
-const tokenHdr = ()=> EDIT_TOKEN ? {"x-edit-token":EDIT_TOKEN} : {};
+const SERVER = HTTP;
 
-// recategorização por drag (overlays em localStorage só no modo FILE)
-const OKEY="refs-overrides";
-const overrides=FILE?JSON.parse(localStorage.getItem(OKEY)||"{}"):{};
-const saveOv=()=>localStorage.setItem(OKEY,JSON.stringify(overrides));
-if(FILE)REFS.forEach(r=>{const o=overrides[slug(r.title)]; if(o){ if(o.cat&&CATS[o.cat])r.cat=o.cat; if("cat2" in o){ if(o.cat2&&CATS[o.cat2])r.cat2=o.cat2; else delete r.cat2; } if(Array.isArray(o.types))r.types=o.types; }});
+let EDIT_TOKEN = DEPLOY ? (sessionStorage.getItem("edit-token") || "") : "";
+let unlocked = !DEPLOY || !!EDIT_TOKEN;
+let READONLY = false;
+let SEMANTIC = false;
+let healthKnown = !DEPLOY;
+const canEdit = () => !READONLY && (FILE || LOCALSRV || (DEPLOY && unlocked));
+const canAdd = () => !READONLY && (LOCALSRV || (DEPLOY && unlocked));
+const tokenHdr = () => (EDIT_TOKEN ? { "x-edit-token": EDIT_TOKEN } : {});
 
-// refs criadas pela ferramenta (Gemini)
-const ADDKEY="refs-added";
-const added=FILE?JSON.parse(localStorage.getItem(ADDKEY)||"[]"):[];
-const saveAdded=()=>localStorage.setItem(ADDKEY,JSON.stringify(added));
-if(FILE)added.forEach(a=>{ if(!REFS.some(r=>slug(r.title)===slug(a.title))) REFS.push(a); });
+// ---------- overlay localStorage (só modo FILE, sem servidor pra persistir) ----------
+const OKEY = "refs-overrides", ADDKEY = "refs-added", DKEY = "refs-deleted";
+const overrides = FILE ? JSON.parse(localStorage.getItem(OKEY) || "{}") : {};
+const saveOv = () => localStorage.setItem(OKEY, JSON.stringify(overrides));
+const added = FILE ? JSON.parse(localStorage.getItem(ADDKEY) || "[]") : [];
+const saveAdded = () => localStorage.setItem(ADDKEY, JSON.stringify(added));
+const deleted = new Set(FILE ? JSON.parse(localStorage.getItem(DKEY) || "[]") : []);
+const saveDel = () => localStorage.setItem(DKEY, JSON.stringify([...deleted]));
+const live = (r) => !deleted.has(slug(r.title));
 
-// persistência
-function cleanRef(r){const o={title:r.title,url:r.url||"",cat:r.cat,src:r.src||"link",types:r.types||[]};if(r.cat2&&r.cat2!==r.cat)o.cat2=r.cat2;if(r.items)o.items=r.items;o.desc=r.desc||"";o.date=r.date||SCAN_DATE;["thumb","source"].forEach(k=>{if(r[k])o[k]=r[k];});if(r.installed)o.installed=true;return o;}
-function buildData(){const meta=window.REFS_DATA||{};return{scanDate:SCAN_DATE,firstScan:meta.firstScan||SCAN_DATE,generated:new Date().toISOString().slice(0,10),sources:meta.sources||{videos:0,images:0},refs:REFS.filter(live).map(cleanRef)};}
-async function saveToServer(){const res=await fetch("/api/save",{method:"POST",headers:{"content-type":"application/json",...tokenHdr()},body:JSON.stringify(buildData())});if(!res.ok)throw new Error("HTTP "+res.status);}
-function persist(){if(SERVER)saveToServer().catch(e=>toast("Erro ao salvar: "+e.message));}
-
-REFS.forEach(r=>{r._s=norm([r.title,r.desc,(r.items||[]).join(" "),CATS[r.cat]&&CATS[r.cat].label,(r.types||[]).map(t=>TTAG[t]).join(" "),r.url].join(" "));});
-
-document.getElementById("pubdate").textContent=fmtDate(SCAN_DATE);
-document.getElementById("total").textContent=REFS.length;
-
-const content=document.getElementById("content");
-const catbar=document.getElementById("catbar");
-const typebar=document.getElementById("typebar");
-const searchEl=document.getElementById("search");
-const searchBox=document.getElementById("searchbox");
-const clearBtn=document.getElementById("clear");
-const resultCount=document.getElementById("resultCount");
-
-const activeCats=new Set();
-const activeTypes=new Set();
-let query="";
-
-// exclusão de cards (persistida por navegador via localStorage)
-const DKEY="refs-deleted";
-const deleted=new Set(FILE?JSON.parse(localStorage.getItem(DKEY)||"[]"):[]);
-const saveDel=()=>localStorage.setItem(DKEY,JSON.stringify([...deleted]));
-const live=r=>!deleted.has(slug(r.title));
-const delinfo=document.getElementById("delinfo");
-function renderDelInfo(){
-  if(!delinfo)return;
-  if(deleted.size){
-    delinfo.innerHTML=`<b>${deleted.size}</b> oculta${deleted.size>1?'s':''} · <a class="restore" id="restoreAll">restaurar</a>`;
-    const ra=document.getElementById("restoreAll"); if(ra)ra.onclick=()=>{deleted.clear();saveDel();buildFilters();render();};
-  } else delinfo.innerHTML="";
+if (FILE) {
+  // ordem: overrides de categoria primeiro, depois adições, depois filtro de deletados no render
+  REFS.forEach((r) => {
+    const o = overrides[slug(r.title)];
+    if (!o) return;
+    if (o.cat && CATS[o.cat]) r.cat = o.cat;
+    if ("cat2" in o) { if (o.cat2 && CATS[o.cat2]) r.cat2 = o.cat2; else delete r.cat2; }
+    if (Array.isArray(o.types)) r.types = o.types;
+  });
+  added.forEach((a) => { if (!REFS.some((r) => slug(r.title) === slug(a.title))) REFS.push(a); });
 }
+
+function searchBlob(r) {
+  return norm([r.title, r.desc, (r.items || []).join(" "), CATS[r.cat] && CATS[r.cat].label, (r.types || []).map((t) => TTAG[t]).join(" "), r.url].join(" "));
+}
+REFS.forEach((r) => { r._s = searchBlob(r); });
+
+function cleanRef(r) {
+  const o = { title: r.title, url: r.url || "", cat: r.cat, src: r.src || "link", types: r.types || [] };
+  if (r.cat2 && r.cat2 !== r.cat) o.cat2 = r.cat2;
+  if (r.items) o.items = r.items;
+  o.desc = r.desc || "";
+  o.date = r.date || SCAN_DATE;
+  ["thumb", "source"].forEach((k) => { if (r[k]) o[k] = r[k]; });
+  if (r.installed) o.installed = true;
+  return o;
+}
+function buildData() {
+  const meta = window.REFS_DATA || {};
+  return {
+    scanDate: SCAN_DATE,
+    firstScan: meta.firstScan || SCAN_DATE,
+    generated: new Date().toISOString().slice(0, 10),
+    sources: meta.sources || { videos: 0, images: 0 },
+    refs: REFS.filter(live).map(cleanRef),
+  };
+}
+async function saveToServer() {
+  const res = await fetch("/api/save", { method: "POST", headers: { "content-type": "application/json", ...tokenHdr() }, body: JSON.stringify(buildData()) });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+}
+function persist() {
+  if (SERVER) saveToServer().catch((e) => toast("Erro ao salvar: " + e.message));
+}
+
+// ---------- DOM refs ----------
+document.getElementById("pubdate").textContent = fmtDate(SCAN_DATE);
+document.getElementById("total").textContent = REFS.length;
+const content = document.getElementById("content");
+const catbar = document.getElementById("catbar");
+const typebar = document.getElementById("typebar");
+const searchEl = document.getElementById("search");
+const searchBox = document.getElementById("searchbox");
+const clearBtn = document.getElementById("clear");
+const resultCount = document.getElementById("resultCount");
+const delinfo = document.getElementById("delinfo");
+
+const activeCats = new Set();
+const activeTypes = new Set();
+let query = "";
+let semanticResult = null;
+let showShots = localStorage.getItem("refs-shots") === "1";
+let sortByDate = localStorage.getItem("refs-sort") === "date";
+
+function renderDelInfo() {
+  if (!delinfo) return;
+  if (deleted.size) {
+    delinfo.innerHTML = `<b>${deleted.size}</b> oculta${deleted.size > 1 ? "s" : ""} · <a class="restore" id="restoreAll">restaurar</a>`;
+    const ra = document.getElementById("restoreAll");
+    if (ra) ra.onclick = () => { deleted.clear(); saveDel(); buildFilters(); render(); };
+  } else delinfo.innerHTML = "";
+}
+
 let toastT;
-function toast(msg,undoFn){
-  const el=document.getElementById("toast"); if(!el)return;
-  el.innerHTML=`<span>${msg}</span>`+(undoFn?`<button id="undoBtn">Desfazer</button>`:"");
+function toast(msg, undoFn) {
+  const el = document.getElementById("toast");
+  if (!el) return;
+  el.innerHTML = `<span>${msg}</span>` + (undoFn ? `<button id="undoBtn">Desfazer</button>` : "");
   el.classList.add("show");
-  if(undoFn){const u=document.getElementById("undoBtn"); if(u)u.onclick=()=>{undoFn();el.classList.remove("show");};}
-  clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("show"),6000);
+  if (undoFn) { const u = document.getElementById("undoBtn"); if (u) u.onclick = () => { undoFn(); el.classList.remove("show"); }; }
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove("show"), 6000);
 }
 
-const mCat=r=>activeCats.size===0||catsOf(r).some(c=>activeCats.has(c));
-const mType=r=>activeTypes.size===0||(r.types||[]).some(t=>activeTypes.has(t));
-const mSearch=r=>query===""||r._s.includes(query);
-const visible=r=>mCat(r)&&mType(r)&&mSearch(r)&&live(r);
+// ---------- filtros + render ----------
+const mCat = (r) => activeCats.size === 0 || catsOf(r).some((c) => activeCats.has(c));
+const mType = (r) => activeTypes.size === 0 || (r.types || []).some((t) => activeTypes.has(t));
+const mSearch = (r) => query === "" || r._s.includes(query);
+const visible = (r) => mCat(r) && mType(r) && mSearch(r) && live(r);
 
-function buildFilters(){
-  const cc=k=>REFS.filter(r=>(k==="all"||catsOf(r).includes(k))&&mType(r)&&mSearch(r)&&live(r)).length;
-  const catActive=k=>k==="all"?activeCats.size===0:activeCats.has(k);
-  let html=`<button class="chip${catActive("all")?' active':''}" data-cat="all">Tudo<span class="n">${cc("all")}</span></button>`;
-  CATKEYS.forEach(k=>{html+=`<button class="chip cat${activeCats.has(k)?' active':''}" data-cat="${k}" style="--cc:${CATS[k].c}"><span class="swatch"></span>${CATS[k].label}<span class="n">${cc(k)}</span></button>`;});
-  catbar.innerHTML=html;
-  catbar.querySelectorAll(".chip").forEach(b=>b.onclick=(e)=>{
-    const k=b.dataset.cat;
-    if(k==="all"){activeCats.clear();}
-    else if(e.shiftKey){activeCats.has(k)?activeCats.delete(k):activeCats.add(k);}
-    else{if(activeCats.size===1&&activeCats.has(k))activeCats.clear();else{activeCats.clear();activeCats.add(k);}}
-    buildFilters();render();
+function buildFilters() {
+  const countCat = (k) => REFS.filter((r) => (k === "all" || catsOf(r).includes(k)) && mType(r) && mSearch(r) && live(r)).length;
+  let html = `<button class="chip${activeCats.size === 0 ? " active" : ""}" data-cat="all">Tudo<span class="n">${countCat("all")}</span></button>`;
+  CATKEYS.forEach((k) => {
+    html += `<button class="chip cat${activeCats.has(k) ? " active" : ""}" data-cat="${k}" style="--cc:${CATS[k].c}"><span class="swatch"></span>${CATS[k].label}<span class="n">${countCat(k)}</span></button>`;
+  });
+  catbar.innerHTML = html;
+  catbar.querySelectorAll(".chip").forEach((b) => {
+    b.onclick = (e) => {
+      const k = b.dataset.cat;
+      if (k === "all") activeCats.clear();
+      else if (e.shiftKey) { activeCats.has(k) ? activeCats.delete(k) : activeCats.add(k); }
+      else { if (activeCats.size === 1 && activeCats.has(k)) activeCats.clear(); else { activeCats.clear(); activeCats.add(k); } }
+      buildFilters(); render();
+    };
   });
 
-  const tc=t=>REFS.filter(r=>mCat(r)&&mSearch(r)&&live(r)&&(r.types||[]).includes(t)).length;
-  typebar.innerHTML=Object.entries(TYPES).map(([t,v])=>`<button class="chip${activeTypes.has(t)?' active':''}" data-type="${t}">${v}<span class="n">${tc(t)}</span></button>`).join("");
-  typebar.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{const t=b.dataset.type;activeTypes.has(t)?activeTypes.delete(t):activeTypes.add(t);buildFilters();render();});
+  const countType = (t) => REFS.filter((r) => mCat(r) && mSearch(r) && live(r) && (r.types || []).includes(t)).length;
+  typebar.innerHTML = Object.entries(TYPES).map(([t, label]) => `<button class="chip${activeTypes.has(t) ? " active" : ""}" data-type="${t}">${label}<span class="n">${countType(t)}</span></button>`).join("");
+  typebar.querySelectorAll(".chip").forEach((b) => {
+    b.onclick = () => { const t = b.dataset.type; activeTypes.has(t) ? activeTypes.delete(t) : activeTypes.add(t); buildFilters(); render(); };
+  });
 }
 
-// prints da home (mShots do WordPress) — derivados da URL, nada é armazenado; toggle persistido
-let showShots=localStorage.getItem("refs-shots")==="1";
-let sortByDate=localStorage.getItem("refs-sort")==="date";   // ordenar por data de adição (admin)
-const shotUrl=u=>"https://s.wordpress.com/mshots/v1/"+encodeURIComponent(u)+"?w=640&h=400";
-function card(r){
-  const cat=CATS[r.cat]||{label:r.cat,c:"var(--ink)"};
-  const cat2=(r.cat2&&r.cat2!==r.cat&&CATS[r.cat2])?CATS[r.cat2]:null;
-  const body=r.items
-    ? `<p>${r.desc||""}</p><ul class="list">${r.items.map(x=>`<li>${x}</li>`).join("")}</ul>`
-    : `<p>${r.desc||""}</p>`;
-  const tags=(r.types||[]).filter(t=>TTAG[t]).map(t=>`<span class="ttag">${TTAG[t]}</span>`).join("");
-  const foot=r.url
-    ? `<a class="go" href="${r.url}" target="_blank" rel="noopener" draggable="false">Acessar <span class="arw">→</span></a>`
-    : `<span class="local">${r.installed?'Skill instalada':'Mídia local'}</span>`;
-  let thumbSrc=r.thumb||"";
-  if(!thumbSrc&&showShots&&r.url&&/^https?:\/\//i.test(r.url)&&(r.types||[]).includes("site")) thumbSrc=shotUrl(r.url);
-  const thumb=thumbSrc?`<img class="card-thumb" src="${thumbSrc}" loading="lazy" alt="" draggable="false" onerror="this.style.display='none'" onload="if(this.naturalWidth<60||this.naturalHeight<60)this.style.display='none'">`:"";
-  const seal=r.installed?`<span class="card-seal" title="Skill instalada na sua máquina">✓ instalada</span>`:"";
-  const catTags=`<span class="tag">${cat.label}</span>`+(cat2?`<span class="tag" style="--cc:${cat2.c}">${cat2.label}</span>`:"");
-  const picker=canEdit()?`<details class="catpick"><summary title="Categorias (máx. 2)" aria-label="Editar categorias">▾</summary><div class="catpick-menu">${CATKEYS.map(k=>`<label class="cpitem"><input type="checkbox" data-catpick="${k}"${catsOf(r).includes(k)?" checked":""}><span class="cpsw" style="--cc:${CATS[k].c}"></span>${CATS[k].label}</label>`).join("")}</div></details>`:"";
-  return `<div class="card-wrap" id="c-${slug(r.title)}" style="--cc:${cat.c};--cc2:${cat2?cat2.c:cat.c}"><article class="card${r.installed?' is-installed':''}" data-slug="${slug(r.title)}">
+const shotUrl = (u) => "https://s.wordpress.com/mshots/v1/" + encodeURIComponent(u) + "?w=640&h=400";
+
+function card(r) {
+  const cat = CATS[r.cat] || { label: r.cat, c: "var(--ink)" };
+  const cat2 = (r.cat2 && r.cat2 !== r.cat && CATS[r.cat2]) ? CATS[r.cat2] : null;
+  const body = r.items
+    ? `<p>${r.desc || ""}</p><ul class="list">${r.items.map((x) => `<li>${x}</li>`).join("")}</ul>`
+    : `<p>${r.desc || ""}</p>`;
+  const ttags = (r.types || []).filter((t) => TTAG[t]).map((t) => `<span class="ttag">${TTAG[t]}</span>`).join("");
+  const foot = r.url
+    ? `<a class="go" href="${r.url}" target="_blank" rel="noopener">Acessar <span class="arw">→</span></a>`
+    : `<span class="local">${r.installed ? "Skill instalada" : "Mídia local"}</span>`;
+  let thumbSrc = r.thumb || "";
+  if (!thumbSrc && showShots && r.url && /^https?:\/\//i.test(r.url) && (r.types || []).includes("site")) thumbSrc = shotUrl(r.url);
+  const thumb = thumbSrc ? `<img class="card-thumb" src="${thumbSrc}" loading="lazy" alt="" onerror="this.style.display='none'" onload="if(this.naturalWidth<60||this.naturalHeight<60)this.style.display='none'">` : "";
+  const seal = r.installed ? `<span class="card-seal" title="Skill instalada na sua máquina">✓ instalada</span>` : "";
+  const catTags = `<span class="tag">${cat.label}</span>` + (cat2 ? `<span class="tag" style="--cc:${cat2.c}">${cat2.label}</span>` : "");
+  const picker = canEdit()
+    ? `<details class="catpick"><summary title="Categorias (máx. 2)" aria-label="Editar categorias">▾</summary><div class="catpick-menu">${CATKEYS.map((k) => `<label class="cpitem"><input type="checkbox" data-catpick="${k}"${catsOf(r).includes(k) ? " checked" : ""}><span class="cpsw" style="--cc:${CATS[k].c}"></span>${CATS[k].label}</label>`).join("")}</div></details>`
+    : "";
+  return `<div class="card-wrap" id="c-${slug(r.title)}" style="--cc:${cat.c};--cc2:${cat2 ? cat2.c : cat.c}"><article class="card${r.installed ? " is-installed" : ""}" data-slug="${slug(r.title)}">
     <div class="bar"></div>
     ${seal}
     ${thumb}
     <div class="pad">
       <div class="card-top">
-        <h3>${r.url?`<a href="${r.url}" target="_blank" rel="noopener" draggable="false">${r.title}</a>`:r.title}</h3>
-        <div class="card-tags">${catTags}${tags}${picker}</div>
+        <h3>${r.url ? `<a href="${r.url}" target="_blank" rel="noopener">${r.title}</a>` : r.title}</h3>
+        <div class="card-tags">${catTags}${ttags}${picker}</div>
       </div>
       ${body}
       <div class="card-foot">
-        <span class="date mono">${br(r.date||SCAN_DATE)}</span>
-        <span class="foot-right">${foot}${canEdit()?`<button class="del" data-del="${slug(r.title)}" title="Remover do catálogo" aria-label="Remover">×</button>`:""}</span>
+        <span class="date mono">${br(r.date || SCAN_DATE)}</span>
+        <span class="foot-right">${foot}${canEdit() ? `<button class="del" data-del="${slug(r.title)}" title="Remover do catálogo" aria-label="Remover">×</button>` : ""}</span>
       </div>
     </div>
   </article></div>`;
 }
 
-function render(){
-  document.getElementById("total").textContent=REFS.filter(live).length;
+function render() {
+  document.getElementById("total").textContent = REFS.filter(live).length;
   renderDelInfo();
-  const total=REFS.filter(visible).length;
-  resultCount.textContent=(query||activeTypes.size||activeCats.size)?`${total} ${total===1?'resultado':'resultados'}`:"";
-  if(!REFS.length){content.innerHTML=`<p class="empty">Sem dados — refs-data.js ausente ou vazio.</p>`;return;}
-  if(semanticResult){   // resultado da busca semântica: cards relacionados abaixo da resposta
-    const items=semanticResult.refs.filter(live);
-    content.innerHTML=items.length
-      ?`<p class="sem-count">${items.length} referência(s) relacionada(s)</p><div class="grid">${items.map(card).join("")}</div>`
-      :`<p class="empty">Sem cards relacionados a essa busca.</p>`;
+  const total = REFS.filter(visible).length;
+  resultCount.textContent = (query || activeTypes.size || activeCats.size) ? `${total} ${total === 1 ? "resultado" : "resultados"}` : "";
+  if (!REFS.length) { content.innerHTML = `<p class="empty">Sem dados — refs-data.js ausente ou vazio.</p>`; return; }
+
+  if (semanticResult) {
+    const items = semanticResult.refs.filter(live);
+    content.innerHTML = items.length
+      ? `<p class="sem-count">${items.length} referência(s) relacionada(s)</p><div class="grid">${items.map(card).join("")}</div>`
+      : `<p class="empty">Sem cards relacionados a essa busca.</p>`;
     return;
   }
-  if(sortByDate){   // lista plana, mais recentes primeiro (empate: quem entrou depois no array)
-    const items=REFS.map((r,i)=>[r,i]).filter(([r])=>visible(r))
-      .sort((a,b)=>((b[0].date||"").localeCompare(a[0].date||""))||(b[1]-a[1])).map(([r])=>r);
-    content.innerHTML=items.length
-      ?`<section class="section"><div class="section-head"><h2>Recentes</h2><span class="count">${pad2(items.length)} ${items.length===1?'entrada':'entradas'}</span></div><div class="grid">${items.map(card).join("")}</div></section>`
-      :`<p class="empty">Nada encontrado.</p>`;
+  if (sortByDate) {
+    const items = REFS.map((r, i) => [r, i]).filter(([r]) => visible(r))
+      .sort((a, b) => ((b[0].date || "").localeCompare(a[0].date || "")) || (b[1] - a[1])).map(([r]) => r);
+    content.innerHTML = items.length
+      ? `<section class="section"><div class="section-head"><h2>Recentes</h2><span class="count">${pad2(items.length)} ${items.length === 1 ? "entrada" : "entradas"}</span></div><div class="grid">${items.map(card).join("")}</div></section>`
+      : `<p class="empty">Nada encontrado.</p>`;
     return;
   }
-  const groups=CATKEYS.filter(k=>activeCats.size===0||activeCats.has(k));
-  let html="",n=0;
-  groups.forEach(k=>{
-    const items=REFS.filter(r=>catsOf(r).includes(k)&&mType(r)&&mSearch(r)&&live(r));
-    if(!items.length)return;
-    n++;
-    html+=`<section class="section" style="--cc:${CATS[k].c}">
-      <div class="section-head">
-        <h2>${CATS[k].label}</h2>
-        <span class="count">${pad2(items.length)} ${items.length===1?'entrada':'entradas'}</span>
-      </div>
+  const groups = CATKEYS.filter((k) => activeCats.size === 0 || activeCats.has(k));
+  let html = "";
+  groups.forEach((k) => {
+    const items = REFS.filter((r) => catsOf(r).includes(k) && mType(r) && mSearch(r) && live(r));
+    if (!items.length) return;
+    html += `<section class="section" style="--cc:${CATS[k].c}">
+      <div class="section-head"><h2>${CATS[k].label}</h2><span class="count">${pad2(items.length)} ${items.length === 1 ? "entrada" : "entradas"}</span></div>
       <div class="grid">${items.map(card).join("")}</div>
     </section>`;
   });
-  content.innerHTML=html||`<p class="empty">Nada encontrado.</p>`;
+  content.innerHTML = html || `<p class="empty">Nada encontrado.</p>`;
 }
 
-let deb;
-searchEl.addEventListener("input",()=>{clearTimeout(deb);deb=setTimeout(()=>{query=norm(searchEl.value.trim());searchBox.classList.toggle("has",searchEl.value.length>0);buildFilters();render();},120);});
-clearBtn.addEventListener("click",()=>{searchEl.value="";query="";searchBox.classList.remove("has");searchEl.focus();buildFilters();render();});
-const shotsToggle=document.getElementById("shotsToggle");
-const paintShots=()=>shotsToggle.classList.toggle("on",showShots);
-shotsToggle.addEventListener("click",()=>{showShots=!showShots;localStorage.setItem("refs-shots",showShots?"1":"0");paintShots();render();});
+let searchDeb;
+searchEl.addEventListener("input", () => {
+  clearTimeout(searchDeb);
+  searchDeb = setTimeout(() => {
+    query = norm(searchEl.value.trim());
+    searchBox.classList.toggle("has", searchEl.value.length > 0);
+    buildFilters(); render();
+  }, 120);
+});
+clearBtn.addEventListener("click", () => {
+  searchEl.value = ""; query = ""; searchBox.classList.remove("has"); searchEl.focus();
+  buildFilters(); render();
+});
+
+const shotsToggle = document.getElementById("shotsToggle");
+const paintShots = () => shotsToggle.classList.toggle("on", showShots);
+shotsToggle.addEventListener("click", () => { showShots = !showShots; localStorage.setItem("refs-shots", showShots ? "1" : "0"); paintShots(); render(); });
 paintShots();
-const sortToggle=document.getElementById("sortToggle");
-const paintSort=()=>sortToggle.classList.toggle("on",sortByDate);
-sortToggle.addEventListener("click",()=>{sortByDate=!sortByDate;localStorage.setItem("refs-sort",sortByDate?"date":"cat");paintSort();render();});
+
+const sortToggle = document.getElementById("sortToggle");
+const paintSort = () => sortToggle.classList.toggle("on", sortByDate);
+sortToggle.addEventListener("click", () => { sortByDate = !sortByDate; localStorage.setItem("refs-sort", sortByDate ? "date" : "cat"); paintSort(); render(); });
 paintSort();
 
-// ---- busca semântica (Gemini) — separada da busca por palavra-chave; só admin ----
-const semInput=document.getElementById("semInput"),semBtn=document.getElementById("semBtn"),
-      semClear=document.getElementById("semClear"),semAnswer=document.getElementById("semAnswer");
-let semanticResult=null;   // {answer, refs:[...]}
-function parseObj(raw){
-  let t=String(raw||"").replace(/```(?:json)?/gi,"").trim();
-  try{return JSON.parse(t);}catch(_){}
-  const i=t.indexOf("{"); if(i<0)return null;
-  let depth=0,inStr=false,esc=false;
-  for(let k=i;k<t.length;k++){const c=t[k];
-    if(inStr){ if(esc)esc=false; else if(c==="\\")esc=true; else if(c==='"')inStr=false; }
-    else { if(c==='"')inStr=true; else if(c==="{")depth++; else if(c==="}"){ if(--depth===0){ try{return JSON.parse(t.slice(i,k+1));}catch(_){return null;} } } }
+// ---------- busca semântica ----------
+const semInput = document.getElementById("semInput"), semBtn = document.getElementById("semBtn");
+const semClear = document.getElementById("semClear"), semAnswer = document.getElementById("semAnswer");
+
+function parseObj(raw) {
+  const t = String(raw || "").replace(/```(?:json)?/gi, "").trim();
+  try { return JSON.parse(t); } catch (_) {}
+  const i = t.indexOf("{");
+  if (i < 0) return null;
+  let depth = 0, inStr = false, esc = false;
+  for (let k = i; k < t.length; k++) {
+    const c = t[k];
+    if (inStr) { if (esc) esc = false; else if (c === "\\") esc = true; else if (c === '"') inStr = false; }
+    else { if (c === '"') inStr = true; else if (c === "{") depth++; else if (c === "}") { if (--depth === 0) { try { return JSON.parse(t.slice(i, k + 1)); } catch (_) { return null; } } } }
   }
   return null;
 }
-async function askSemantic(q){
-  if(!q)return;
-  if(!SEMANTIC){ semAnswer.textContent="Busca semântica indisponível neste site."; semClear.style.display=""; return; }
-  semBtn.disabled=true; semClear.style.display="";
-  semAnswer.innerHTML='<span class="spin"></span>Pensando…';
-  try{
-    const res=await fetch("/api/semantic",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({q})});
-    const j=await res.json().catch(()=>({}));
-    if(!res.ok||!j.ok){ semAnswer.textContent="Erro: "+((j&&j.error)||("HTTP "+res.status)); semBtn.disabled=false; return; }
-    const parsed=parseObj(j.raw)||{};
-    const byNorm=new Map(REFS.filter(live).map(r=>[norm(r.title),r]));
-    const refs=[],seen=new Set();
-    (Array.isArray(parsed.matches)?parsed.matches:[]).forEach(t=>{const r=byNorm.get(norm(String(t)));if(r&&!seen.has(r)){seen.add(r);refs.push(r);}});
-    semanticResult={answer:(parsed.answer||"").trim(),refs};
-    semAnswer.textContent=semanticResult.answer||"(sem resposta)";
+async function askSemantic(q) {
+  if (!q) return;
+  if (!SEMANTIC) { semAnswer.textContent = "Busca semântica indisponível neste site."; semClear.style.display = ""; return; }
+  semBtn.disabled = true; semClear.style.display = "";
+  semAnswer.innerHTML = '<span class="spin"></span>Pensando…';
+  try {
+    const res = await fetch("/api/semantic", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ q }) });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || !j.ok) { semAnswer.textContent = "Erro: " + ((j && j.error) || ("HTTP " + res.status)); semBtn.disabled = false; return; }
+    const parsed = parseObj(j.raw) || {};
+    const byNorm = new Map(REFS.filter(live).map((r) => [norm(r.title), r]));
+    const refs = [], seen = new Set();
+    (Array.isArray(parsed.matches) ? parsed.matches : []).forEach((t) => {
+      const r = byNorm.get(norm(String(t)));
+      if (r && !seen.has(r)) { seen.add(r); refs.push(r); }
+    });
+    semanticResult = { answer: (parsed.answer || "").trim(), refs };
+    semAnswer.textContent = semanticResult.answer || "(sem resposta)";
     render();
-  }catch(e){ semAnswer.textContent="Erro na busca: "+e.message; }
-  finally{ semBtn.disabled=false; }
+  } catch (e) {
+    semAnswer.textContent = "Erro na busca: " + e.message;
+  } finally {
+    semBtn.disabled = false;
+  }
 }
-function clearSemantic(){ semanticResult=null; semAnswer.textContent=""; semClear.style.display="none"; semInput.value=""; render(); }
-semBtn.addEventListener("click",()=>askSemantic(semInput.value.trim()));
-semInput.addEventListener("keydown",e=>{ if(e.key==="Enter")askSemantic(semInput.value.trim()); });
-semClear.addEventListener("click",clearSemantic);
+function clearSemantic() { semanticResult = null; semAnswer.textContent = ""; semClear.style.display = "none"; semInput.value = ""; render(); }
+semBtn.addEventListener("click", () => askSemantic(semInput.value.trim()));
+semInput.addEventListener("keydown", (e) => { if (e.key === "Enter") askSemantic(semInput.value.trim()); });
+semClear.addEventListener("click", clearSemantic);
 
-// clique no × remove a referência (SERVER: apaga do arquivo · file://: oculta no navegador)
-content.addEventListener("click",e=>{
-  const b=e.target.closest(".del"); if(!b)return;
+// ---------- deletar / desfazer ----------
+content.addEventListener("click", (e) => {
+  const b = e.target.closest(".del");
+  if (!b) return;
   e.preventDefault(); e.stopPropagation();
-  const sl=b.dataset.del; if(!sl)return;
-  if(SERVER){
-    const i=REFS.findIndex(r=>slug(r.title)===sl); if(i<0)return;
-    const removed=REFS.splice(i,1)[0]; buildFilters(); render(); persist();
-    toast("Referência removida.",()=>{REFS.splice(Math.min(i,REFS.length),0,removed);buildFilters();render();persist();});
+  const sl = b.dataset.del;
+  if (!sl) return;
+  if (SERVER) {
+    const i = REFS.findIndex((r) => slug(r.title) === sl);
+    if (i < 0) return;
+    const removed = REFS.splice(i, 1)[0];
+    buildFilters(); render(); persist();
+    toast("Referência removida.", () => { REFS.splice(Math.min(i, REFS.length), 0, removed); buildFilters(); render(); persist(); });
   } else {
     deleted.add(sl); saveDel(); buildFilters(); render();
-    toast("Referência removida.",()=>{deleted.delete(sl);saveDel();buildFilters();render();});
+    toast("Referência removida.", () => { deleted.delete(sl); saveDel(); buildFilters(); render(); });
   }
 });
 
-// ---- recategorização por dropdown em cada card (máx. 2 categorias) ----
-content.addEventListener("change",e=>{
-  const cb=e.target.closest("input[data-catpick]"); if(!cb)return;
-  const art=cb.closest(".card"); if(!art)return;
-  const r=REFS.find(x=>slug(x.title)===art.dataset.slug); if(!r)return;
-  const checked=[...art.querySelectorAll("input[data-catpick]:checked")].map(b=>b.dataset.catpick);
-  if(checked.length>2){ cb.checked=false; return; }   // no máximo duas
-  if(checked.length===0){ cb.checked=true; return; }  // no mínimo uma
-  r.cat=checked[0]; if(checked[1])r.cat2=checked[1]; else delete r.cat2;
-  r._s=norm([r.title,r.desc,catsOf(r).map(c=>CATS[c]&&CATS[c].label).join(" "),(r.types||[]).join(" "),r.url].join(" "));
-  // atualiza a tarja, o extrude e as tags — sem fechar o menu (--cc/--cc2 vivem no wrap)
-  const c1=CATS[r.cat], c2=(r.cat2&&CATS[r.cat2])?CATS[r.cat2]:null;
-  const wrap=art.closest(".card-wrap")||art;
-  wrap.style.setProperty("--cc",c1.c); wrap.style.setProperty("--cc2",c2?c2.c:c1.c);
-  const tw=art.querySelector(".card-tags"); if(tw){ tw.querySelectorAll(".tag").forEach(t=>t.remove());
-    tw.insertAdjacentHTML("afterbegin",`<span class="tag">${c1.label}</span>`+(c2?`<span class="tag" style="--cc:${c2.c}">${c2.label}</span>`:"")); }
-  if(SERVER){ persist(); } else { const o=overrides[art.dataset.slug]||(overrides[art.dataset.slug]={}); o.cat=r.cat; if(r.cat2)o.cat2=r.cat2; else delete o.cat2; saveOv(); }
-  buildFilters(); // atualiza os contadores das categorias (não fecha o menu)
+// ---------- recategorizar via dropdown ----------
+content.addEventListener("change", (e) => {
+  const cb = e.target.closest("input[data-catpick]");
+  if (!cb) return;
+  const art = cb.closest(".card");
+  if (!art) return;
+  const r = REFS.find((x) => slug(x.title) === art.dataset.slug);
+  if (!r) return;
+  const checked = [...art.querySelectorAll("input[data-catpick]:checked")].map((b) => b.dataset.catpick);
+  if (checked.length > 2) { cb.checked = false; return; }
+  if (checked.length === 0) { cb.checked = true; return; }
+  r.cat = checked[0];
+  if (checked[1]) r.cat2 = checked[1]; else delete r.cat2;
+  r._s = searchBlob(r);
+  const c1 = CATS[r.cat], c2 = (r.cat2 && CATS[r.cat2]) ? CATS[r.cat2] : null;
+  const wrap = art.closest(".card-wrap") || art;
+  wrap.style.setProperty("--cc", c1.c);
+  wrap.style.setProperty("--cc2", c2 ? c2.c : c1.c);
+  const tw = art.querySelector(".card-tags");
+  if (tw) {
+    tw.querySelectorAll(".tag").forEach((t) => t.remove());
+    tw.insertAdjacentHTML("afterbegin", `<span class="tag">${c1.label}</span>` + (c2 ? `<span class="tag" style="--cc:${c2.c}">${c2.label}</span>` : ""));
+  }
+  if (SERVER) persist();
+  else {
+    const o = overrides[art.dataset.slug] || (overrides[art.dataset.slug] = {});
+    o.cat = r.cat;
+    if (r.cat2) o.cat2 = r.cat2; else delete o.cat2;
+    saveOv();
+  }
+  buildFilters();
 });
-// posiciona o menu (position:fixed, escapa do overflow do card) ao abrir
-content.addEventListener("click",e=>{
-  const sum=e.target.closest(".catpick>summary"); if(!sum)return;
-  const det=sum.parentElement;
-  setTimeout(()=>{ if(!det.open)return; const m=det.querySelector(".catpick-menu"); if(!m)return;
-    const r=sum.getBoundingClientRect();
-    m.style.left=Math.max(8,Math.min(r.right-m.offsetWidth, window.innerWidth-m.offsetWidth-8))+"px";
-    m.style.top=Math.max(8,Math.min(r.bottom+6, window.innerHeight-m.offsetHeight-10))+"px";
-  },0);
+content.addEventListener("click", (e) => {
+  const sum = e.target.closest(".catpick>summary");
+  if (!sum) return;
+  const det = sum.parentElement;
+  setTimeout(() => {
+    if (!det.open) return;
+    const m = det.querySelector(".catpick-menu");
+    if (!m) return;
+    const r = sum.getBoundingClientRect();
+    m.style.left = Math.max(8, Math.min(r.right - m.offsetWidth, window.innerWidth - m.offsetWidth - 8)) + "px";
+    m.style.top = Math.max(8, Math.min(r.bottom + 6, window.innerHeight - m.offsetHeight - 10)) + "px";
+  }, 0);
 });
-// fecha o dropdown ao rolar ou clicar fora
-window.addEventListener("scroll",()=>{document.querySelectorAll(".catpick[open]").forEach(d=>{d.open=false;});},true);
-document.addEventListener("click",e=>{ if(e.target.closest(".catpick"))return; document.querySelectorAll(".catpick[open]").forEach(d=>{d.open=false;}); });
+window.addEventListener("scroll", () => { document.querySelectorAll(".catpick[open]").forEach((d) => { d.open = false; }); }, true);
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".catpick")) return;
+  document.querySelectorAll(".catpick[open]").forEach((d) => { d.open = false; });
+});
 
-// ---------- Adicionar referência (Gemini via servidor /api/analyze) ----------
-const addUrl=document.getElementById("addUrl"),addUrlBtn=document.getElementById("addUrlBtn");
-const addImg=document.getElementById("addImg"),dropZone=document.getElementById("dropZone");
-const addStatus=document.getElementById("addStatus");
-const unlockRow=document.getElementById("unlockRow"),etoken=document.getElementById("etoken"),etokenBtn=document.getElementById("etokenBtn");
-const syncRow=document.getElementById("syncRow"),pullBtn=document.getElementById("pullBtn"),pushBtn=document.getElementById("pushBtn");
-const exportBtn=document.getElementById("exportBtn");
-function gstat(msg,load){addStatus.innerHTML=(load?'<span class="spin"></span>':"")+msg;}
-const CATLIST=Object.entries(CATS).map(([k,v])=>`${k} (${v.label})`).join(", ");
-const GPROMPT=`Você cataloga ferramentas, sites e recursos para um catálogo, em PORTUGUÊS. Produza UM objeto JSON com EXATAMENTE estes campos: "title" (nome curto oficial, ex.: "remove.bg"), "url" (URL oficial https; se for imagem, infira a URL oficial), "cat" (a categoria PRINCIPAL — use EXATAMENTE uma destas CHAVES em minúsculo: ${Object.keys(CATS).join(", ")} — significados: ${CATLIST}), "cat2" (OPCIONAL — uma segunda CHAVE diferente, só se o item claramente pertence a duas categorias; senão omita), "types" (array só com valores exatos entre "site","repo","skill": github=repo, skill do Claude=skill, caso contrário "site"), "desc" (2 a 3 frases em português, analítico, sobre o que é e para que serve, sem copiar marketing). Responda SOMENTE com o objeto JSON válido, sem markdown e sem texto ao redor.`;
-async function gemini(body){
-  const res=await fetch("/api/analyze",{method:"POST",headers:{"content-type":"application/json",...tokenHdr()},body:JSON.stringify(body)});
-  if(!res.ok){let t="";try{t=(await res.json()).error||"";}catch(_){} throw new Error("HTTP "+res.status+(t?" · "+t:""));}
-  const data=await res.json();
-  const parts=(((data.candidates||[])[0]||{}).content||{}).parts||[];
-  const text=parts.map(p=>p.text).filter(Boolean).join("").trim();
-  if(!text)throw new Error("resposta vazia do modelo");
+// ---------- adicionar referência (digest universal por IA) ----------
+const addUrl = document.getElementById("addUrl"), addUrlBtn = document.getElementById("addUrlBtn");
+const addImg = document.getElementById("addImg"), dropZone = document.getElementById("dropZone");
+const addStatus = document.getElementById("addStatus");
+const unlockRow = document.getElementById("unlockRow"), etoken = document.getElementById("etoken"), etokenBtn = document.getElementById("etokenBtn");
+const syncRow = document.getElementById("syncRow"), pullBtn = document.getElementById("pullBtn"), pushBtn = document.getElementById("pushBtn");
+const exportBtn = document.getElementById("exportBtn");
+function gstat(msg, loading) { addStatus.innerHTML = (loading ? '<span class="spin"></span>' : "") + msg; }
+
+const CATLIST = Object.entries(CATS).map(([k, v]) => `${k} (${v.label})`).join(", ");
+const GPROMPT = `Você cataloga ferramentas, sites e recursos para um catálogo, em PORTUGUÊS. Produza UM objeto JSON com EXATAMENTE estes campos: "title" (nome curto oficial, ex.: "remove.bg"), "url" (URL oficial https; se for imagem, infira a URL oficial), "cat" (a categoria PRINCIPAL — use EXATAMENTE uma destas CHAVES em minúsculo: ${CATKEYS.join(", ")} — significados: ${CATLIST}), "cat2" (OPCIONAL — uma segunda CHAVE diferente, só se o item claramente pertence a duas categorias; senão omita), "types" (array só com valores exatos entre "site","repo","skill": github=repo, skill do Claude=skill, caso contrário "site"), "desc" (2 a 3 frases em português, analítico, sobre o que é e para que serve, sem copiar marketing). Responda SOMENTE com o objeto JSON válido, sem markdown e sem texto ao redor.`;
+
+async function gemini(body) {
+  const res = await fetch("/api/analyze", { method: "POST", headers: { "content-type": "application/json", ...tokenHdr() }, body: JSON.stringify(body) });
+  if (!res.ok) { let t = ""; try { t = (await res.json()).error || ""; } catch (_) {} throw new Error("HTTP " + res.status + (t ? " · " + t : "")); }
+  const data = await res.json();
+  const parts = (((data.candidates || [])[0] || {}).content || {}).parts || [];
+  const text = parts.map((p) => p.text).filter(Boolean).join("").trim();
+  if (!text) throw new Error("resposta vazia do modelo");
   return text;
 }
-// recupera todos os objetos {...} completos de dentro de um trecho (ex.: array truncado)
-function recoverObjects(s){
-  const out=[]; let depth=0,inStr=false,esc=false,st=-1;
-  for(let k=0;k<s.length;k++){const c=s[k];
-    if(inStr){ if(esc)esc=false; else if(c==="\\")esc=true; else if(c==='"')inStr=false; continue; }
-    if(c==='"'){inStr=true;continue;}
-    if(c==="{"){ if(depth===0)st=k; depth++; }
-    else if(c==="}"){ if(depth>0&&--depth===0&&st>=0){ try{out.push(JSON.parse(s.slice(st,k+1)));}catch(_){} st=-1; } }
+
+function recoverObjects(s) {
+  const out = [];
+  let depth = 0, inStr = false, esc = false, st = -1;
+  for (let k = 0; k < s.length; k++) {
+    const c = s[k];
+    if (inStr) { if (esc) esc = false; else if (c === "\\") esc = true; else if (c === '"') inStr = false; continue; }
+    if (c === '"') { inStr = true; continue; }
+    if (c === "{") { if (depth === 0) st = k; depth++; }
+    else if (c === "}") { if (depth > 0 && --depth === 0 && st >= 0) { try { out.push(JSON.parse(s.slice(st, k + 1))); } catch (_) {} st = -1; } }
   }
   return out;
 }
-// parseia a resposta do Gemini em uma LISTA de cards. Aceita objeto único, array, {cards:[...]} e recupera de JSON truncado.
-function parseCards(raw){
-  if(typeof raw!=="string")return [];
-  let t=raw.replace(/```(?:json)?/gi,"").trim();
-  let obj=null; try{obj=JSON.parse(t);}catch(_){}
-  if(obj===null){
-    const iO=t.indexOf("{"), iA=t.indexOf("[");
-    const start=(iA>=0&&(iO<0||iA<iO))?iA:iO;
-    if(start<0)return [];
-    const open=t[start], close=open==="["?"]":"}";
-    let depth=0,inStr=false,esc=false,end=-1;
-    for(let k=start;k<t.length;k++){const c=t[k];
-      if(inStr){ if(esc)esc=false; else if(c==="\\")esc=true; else if(c==='"')inStr=false; }
-      else { if(c==='"')inStr=true; else if(c===open)depth++; else if(c===close){ if(--depth===0){end=k;break;} } }
+function parseCards(raw) {
+  if (typeof raw !== "string") return [];
+  const t = raw.replace(/```(?:json)?/gi, "").trim();
+  let obj = null;
+  try { obj = JSON.parse(t); } catch (_) {}
+  if (obj === null) {
+    const iO = t.indexOf("{"), iA = t.indexOf("[");
+    const start = (iA >= 0 && (iO < 0 || iA < iO)) ? iA : iO;
+    if (start < 0) return [];
+    const open = t[start], close = open === "[" ? "]" : "}";
+    let depth = 0, inStr = false, esc = false, end = -1;
+    for (let k = start; k < t.length; k++) {
+      const c = t[k];
+      if (inStr) { if (esc) esc = false; else if (c === "\\") esc = true; else if (c === '"') inStr = false; }
+      else { if (c === '"') inStr = true; else if (c === open) depth++; else if (c === close) { if (--depth === 0) { end = k; break; } } }
     }
-    try{ obj=JSON.parse(t.slice(start,end>=0?end+1:undefined)); }
-    catch(_){ return recoverObjects(t.slice(start)); } // truncado → recupera objetos completos
+    try { obj = JSON.parse(t.slice(start, end >= 0 ? end + 1 : undefined)); }
+    catch (_) { return recoverObjects(t.slice(start)); }
   }
-  if(Array.isArray(obj))return obj.filter(x=>x&&typeof x==="object");
-  if(obj&&Array.isArray(obj.cards))return obj.cards.filter(x=>x&&typeof x==="object");
-  if(obj&&typeof obj==="object"&&(obj.title||obj.url))return [obj];
+  if (Array.isArray(obj)) return obj.filter((x) => x && typeof x === "object");
+  if (obj && Array.isArray(obj.cards)) return obj.cards.filter((x) => x && typeof x === "object");
+  if (obj && typeof obj === "object" && (obj.title || obj.url)) return [obj];
   return [];
 }
-const normCat=c=>CATS[c]?c:"self";
-const normTypes=t=>{const ok=["site","repo","skill"];const arr=(Array.isArray(t)?t:[t]).filter(x=>ok.includes(x));return arr.length?arr:["site"];};
-const cleanUrl=u=>(u||"").replace(/^https?:\/\//i,"").replace(/\/+$/,"").toLowerCase();
-const urlDupe=url=>!!url&&REFS.some(r=>cleanUrl(r.url)===cleanUrl(url)&&cleanUrl(url));
-function makeRef(j,extra){
-  let url=(j.url||"").trim();
-  // fallback pra source SÓ se não for post de rede social (o link do card nunca deve ser o Instagram)
-  if(!url && extra && extra.source && !isSocial(extra.source)) url=extra.source.trim();
-  const ref={title:(j.title||url||"Sem título").slice(0,120),url,cat:normCat(j.cat),src:"upload",types:normTypes(j.types),desc:(j.desc||"").slice(0,700),date:new Date().toISOString().slice(0,10),added:true};
-  if(j.cat2&&CATS[j.cat2]&&j.cat2!==ref.cat)ref.cat2=j.cat2;   // 2ª categoria opcional (IA)
-  if(extra){ if(extra.thumb)ref.thumb=extra.thumb; if(extra.source)ref.source=extra.source; }
-  // card vindo de post social (Instagram etc.): thumb = print do SITE indicado, não do conteúdo do post
-  if(!ref.thumb && extra && extra.source && isSocial(extra.source) && /^https?:\/\//i.test(ref.url) && !isSocial(ref.url)) ref.thumb=shotUrl(ref.url);
-  ref._s=norm([ref.title,ref.desc,catsOf(ref).map(c=>CATS[c]&&CATS[c].label).join(" "),(ref.types||[]).join(" "),ref.url].join(" "));
+
+const normCat = (c) => (CATS[c] ? c : "self");
+const normTypes = (t) => { const ok = ["site", "repo", "skill"]; const arr = (Array.isArray(t) ? t : [t]).filter((x) => ok.includes(x)); return arr.length ? arr : ["site"]; };
+const cleanUrl = (u) => (u || "").replace(/^https?:\/\//i, "").replace(/\/+$/, "").toLowerCase();
+const urlDupe = (url) => !!url && REFS.some((r) => cleanUrl(r.url) === cleanUrl(url) && cleanUrl(url));
+
+function makeRef(j, extra) {
+  let url = (j.url || "").trim();
+  if (!url && extra && extra.source && !isSocial(extra.source)) url = extra.source.trim();
+  const ref = { title: (j.title || url || "Sem título").slice(0, 120), url, cat: normCat(j.cat), src: "upload", types: normTypes(j.types), desc: (j.desc || "").slice(0, 700), date: new Date().toISOString().slice(0, 10), added: true };
+  if (j.cat2 && CATS[j.cat2] && j.cat2 !== ref.cat) ref.cat2 = j.cat2;
+  if (extra) { if (extra.thumb) ref.thumb = extra.thumb; if (extra.source) ref.source = extra.source; }
+  if (!ref.thumb && extra && extra.source && isSocial(extra.source) && /^https?:\/\//i.test(ref.url) && !isSocial(ref.url)) ref.thumb = shotUrl(ref.url);
+  ref._s = searchBlob(ref);
   return ref;
 }
-// prompt do ingest: catalogar múltiplas referências e evitar duplicatas (dedup semântico feito pelo Gemini)
-function ingestPrompt(){
-  const existing=REFS.filter(live).map(r=>`- ${r.title}${r.url?" — "+r.url:""}`).join("\n");
+
+function ingestPrompt() {
+  const existing = REFS.filter(live).map((r) => `- ${r.title}${r.url ? " — " + r.url : ""}`).join("\n");
   return `Você cataloga ferramentas, sites e recursos, em PORTUGUÊS, a partir de mídia de um post de rede social (slides de um carrossel OU o áudio de um vídeo).
-Para CADA referência DISTINTA e catalogável (um site, ferramenta, repositório, recurso ou ideia com nome/link próprio), produza um objeto com EXATAMENTE: "title" (nome curto oficial), "url" (a URL OFICIAL https do SITE/ferramenta citado — NUNCA a URL do post/Reel do Instagram ou rede social; use seu conhecimento pra inferir o domínio oficial; se realmente não identificar, deixe ""), "cat" (categoria PRINCIPAL — uma destas CHAVES em minúsculo: ${Object.keys(CATS).join(", ")} — significados: ${CATLIST}), "cat2" (OPCIONAL — segunda CHAVE diferente, só se pertencer claramente a duas; senão omita), "types" (array só entre "site","repo","skill"), "desc" (2 a 3 frases analíticas, sobre o que é e pra que serve).
+Para CADA referência DISTINTA e catalogável (um site, ferramenta, repositório, recurso ou ideia com nome/link próprio), produza um objeto com EXATAMENTE: "title" (nome curto oficial), "url" (a URL OFICIAL https do SITE/ferramenta citado — NUNCA a URL do post/Reel do Instagram ou rede social; use seu conhecimento pra inferir o domínio oficial; se realmente não identificar, deixe ""), "cat" (categoria PRINCIPAL — uma destas CHAVES em minúsculo: ${CATKEYS.join(", ")} — significados: ${CATLIST}), "cat2" (OPCIONAL — segunda CHAVE diferente, só se pertencer claramente a duas; senão omita), "types" (array só entre "site","repo","skill"), "desc" (2 a 3 frases analíticas, sobre o que é e pra que serve).
 IGNORE slides/trechos puramente decorativos, de capa/texto, ou sem referência importante — não gere objeto pra eles. Se vários slides tratam da MESMA referência, gere só um objeto.
 NÃO duplique referências que JÁ existem no catálogo abaixo (se for essencialmente uma destas, ignore):
-${existing||"(catálogo vazio)"}
+${existing || "(catálogo vazio)"}
 Responda SOMENTE com um objeto JSON {"cards":[ ... ]} (array, possivelmente vazio), sem markdown e sem texto ao redor.`;
 }
-// cria N cards a partir de uma lista de objetos parseados; dedup por URL, resumo e undo em lote
-function commitCards(cards,extra,label){
-  const fresh=[], dup=[];
-  for(const c of cards){ if(!c||!(c.title||c.url))continue;
-    const u=(c.url||(extra&&extra.source)||"").trim();
-    if(urlDupe(u)){dup.push(c.title||u);continue;}
-    const ref=makeRef(c,extra); REFS.push(ref); if(!SERVER)added.push(ref); fresh.push(ref);
+
+function commitCards(cards, extra, label) {
+  const fresh = [], dup = [];
+  for (const c of cards) {
+    if (!c || !(c.title || c.url)) continue;
+    const u = (c.url || (extra && extra.source) || "").trim();
+    if (urlDupe(u)) { dup.push(c.title || u); continue; }
+    const ref = makeRef(c, extra);
+    REFS.push(ref);
+    if (!SERVER) added.push(ref);
+    fresh.push(ref);
   }
-  if(!fresh.length){ gstat(dup.length?("Já no catálogo: <b>"+dup.slice(0,3).join(", ")+"</b>"+(dup.length>3?" +"+(dup.length-3):"")+"."):("Nada novo pra catalogar"+(label?" ("+label+")":"")+".")); return 0; }
-  if(SERVER)persist(); else saveAdded();
-  buildFilters();render();
-  gstat("Adicionado(s) <b>"+fresh.length+"</b> card(s)"+(label?" · "+label:"")+(dup.length?" · "+dup.length+" já existia(m)":"")+".");
-  const first=document.getElementById("c-"+slug(fresh[0].title)); if(first){first.scrollIntoView({behavior:"smooth",block:"center"});first.classList.add("flash");setTimeout(()=>first.classList.remove("flash"),1800);}
-  toast(fresh.length+" referência(s) adicionada(s).",()=>{fresh.forEach(ref=>{const k=REFS.indexOf(ref);if(k>=0)REFS.splice(k,1);if(!SERVER){const i=added.indexOf(ref);if(i>=0)added.splice(i,1);}});if(SERVER)persist();else saveAdded();buildFilters();render();gstat("");});
+  if (!fresh.length) {
+    gstat(dup.length ? ("Já no catálogo: <b>" + dup.slice(0, 3).join(", ") + "</b>" + (dup.length > 3 ? " +" + (dup.length - 3) : "") + ".") : ("Nada novo pra catalogar" + (label ? " (" + label + ")" : "") + "."));
+    return 0;
+  }
+  if (SERVER) persist(); else saveAdded();
+  buildFilters(); render();
+  gstat("Adicionado(s) <b>" + fresh.length + "</b> card(s)" + (label ? " · " + label : "") + (dup.length ? " · " + dup.length + " já existia(m)" : "") + ".");
+  const first = document.getElementById("c-" + slug(fresh[0].title));
+  if (first) { first.scrollIntoView({ behavior: "smooth", block: "center" }); first.querySelector(".card").classList.add("flash"); setTimeout(() => first.querySelector(".card").classList.remove("flash"), 1800); }
+  toast(fresh.length + " referência(s) adicionada(s).", () => {
+    fresh.forEach((ref) => { const k = REFS.indexOf(ref); if (k >= 0) REFS.splice(k, 1); if (!SERVER) { const i = added.indexOf(ref); if (i >= 0) added.splice(i, 1); } });
+    if (SERVER) persist(); else saveAdded();
+    buildFilters(); render(); gstat("");
+  });
   return fresh.length;
 }
-function createFromResult(raw,extra){
-  const cards=parseCards(raw);
-  if(!cards.length){console.warn("parseCards vazio:\nraw:",raw);gstat("Não consegui interpretar a resposta do modelo. <span class='mono' style='opacity:.6'>"+String(raw||"").slice(0,90).replace(/</g,"&lt;")+"…</span>");return;}
-  commitCards(cards,extra);
+function createFromResult(raw, extra) {
+  const cards = parseCards(raw);
+  if (!cards.length) { console.warn("parseCards vazio:\nraw:", raw); gstat("Não consegui interpretar a resposta do modelo. <span class='mono' style='opacity:.6'>" + String(raw || "").slice(0, 90).replace(/</g, "&lt;") + "…</span>"); return; }
+  commitCards(cards, extra);
 }
-const SOCIAL=/(^|\.)(instagram\.com|tiktok\.com|twitter\.com|x\.com|youtube\.com|youtu\.be|facebook\.com|fb\.watch|threads\.net|pinterest\.[a-z.]+|reddit\.com|vimeo\.com|linkedin\.com)$/i;
-function isSocial(u){try{return SOCIAL.test(new URL(u).hostname);}catch{return false;}}
-// decodifica URL do Google Tradutor (host--assim.translate.goog) de volta pro site real
-function unproxyGoogle(u){
-  try{const url=new URL(/^https?:\/\//i.test(u)?u:"https://"+u);
-    if(url.hostname.endsWith(".translate.goog")){
-      const host=url.hostname.slice(0,-".translate.goog".length).replace(/--/g,"").replace(/-/g,".").replace(//g,"-");
-      const ps=new URLSearchParams(url.search); [...ps.keys()].forEach(k=>{if(/^_x_tr_/.test(k))ps.delete(k);});
-      return "https://"+host+url.pathname+(ps.toString()?"?"+ps:"");
-    }}catch(_){}
+
+const SOCIAL = /(^|\.)(instagram\.com|tiktok\.com|twitter\.com|x\.com|youtube\.com|youtu\.be|facebook\.com|fb\.watch|threads\.net|pinterest\.[a-z.]+|reddit\.com|vimeo\.com|linkedin\.com)$/i;
+function isSocial(u) { try { return SOCIAL.test(new URL(u).hostname); } catch { return false; } }
+
+function unproxyGoogle(u) {
+  try {
+    const url = new URL(/^https?:\/\//i.test(u) ? u : "https://" + u);
+    if (url.hostname.endsWith(".translate.goog")) {
+      const host = url.hostname.slice(0, -".translate.goog".length).replace(/--/g, "\uE000").replace(/-/g, ".").replace(/\uE000/g, "-");
+      const ps = new URLSearchParams(url.search);
+      [...ps.keys()].forEach((k) => { if (/^_x_tr_/.test(k)) ps.delete(k); });
+      return "https://" + host + url.pathname + (ps.toString() ? "?" + ps : "");
+    }
+  } catch (_) {}
   return u;
 }
-async function analyzeUrl(u){
-  if(!canAdd())return; if(!/^https?:\/\//i.test(u))u="https://"+u;
-  u=unproxyGoogle(u);
-  if(isSocial(u))return ingest(u);
-  gstat("Lendo o site com o Gemini…",1);
-  let raw="";
-  try{
-    raw=await gemini({contents:[{parts:[{text:GPROMPT+"\n\nURL para analisar (leia o conteúdo do site): "+u}]}],tools:[{url_context:{}}],generationConfig:{temperature:0.3,maxOutputTokens:8192,thinkingConfig:{thinkingBudget:0}}});
-    if(!parseCards(raw).length && String(raw||"").trim()){   // url_context devolveu prosa → estrutura numa 2ª chamada
-      gstat("Estruturando…",1);
-      raw=await gemini({contents:[{parts:[{text:GPROMPT+"\n\nCom base neste resumo do site (URL oficial: "+u+"), gere o card JSON:\n\n"+raw}]}],generationConfig:{temperature:0.3,maxOutputTokens:4096,responseMimeType:"application/json",thinkingConfig:{thinkingBudget:0}}});
+
+async function analyzeUrl(u) {
+  if (!canAdd()) return;
+  if (!/^https?:\/\//i.test(u)) u = "https://" + u;
+  u = unproxyGoogle(u);
+  if (isSocial(u)) return ingest(u);
+  gstat("Lendo o site com o Gemini…", 1);
+  let raw = "";
+  try {
+    raw = await gemini({ contents: [{ parts: [{ text: GPROMPT + "\n\nURL para analisar (leia o conteúdo do site): " + u }] }], tools: [{ url_context: {} }], generationConfig: { temperature: 0.3, maxOutputTokens: 8192, thinkingConfig: { thinkingBudget: 0 } } });
+    if (!parseCards(raw).length && String(raw || "").trim()) {
+      gstat("Estruturando…", 1);
+      raw = await gemini({ contents: [{ parts: [{ text: GPROMPT + "\n\nCom base neste resumo do site (URL oficial: " + u + "), gere o card JSON:\n\n" + raw }] }], generationConfig: { temperature: 0.3, maxOutputTokens: 4096, responseMimeType: "application/json", thinkingConfig: { thinkingBudget: 0 } } });
     }
-  }catch(_){ raw=""; }   // url_context vazio/falhou → cai no fallback abaixo
-  if(!parseCards(raw).length){   // fallback: o servidor busca a página direto (UA de navegador)
-    try{
-      gstat("Tentando ler direto do servidor…",1);
-      const res=await fetch("/api/readurl",{method:"POST",headers:{"content-type":"application/json",...tokenHdr()},body:JSON.stringify({url:u,prompt:GPROMPT})});
-      const j=await res.json().catch(()=>({}));
-      if(res.ok&&j.ok) raw=j.raw;
-      else { gstat("Não consegui ler o site: "+((j&&j.error)||"bloqueou a leitura")+". Tente um print ou o repositório."); return; }
-    }catch(e){ gstat("Erro: "+e.message); return; }
+  } catch (_) { raw = ""; }
+  if (!parseCards(raw).length) {
+    try {
+      gstat("Tentando ler direto do servidor…", 1);
+      const res = await fetch("/api/readurl", { method: "POST", headers: { "content-type": "application/json", ...tokenHdr() }, body: JSON.stringify({ url: u, prompt: GPROMPT }) });
+      const j = await res.json().catch(() => ({}));
+      if (res.ok && j.ok) raw = j.raw;
+      else { gstat("Não consegui ler o site: " + ((j && j.error) || "bloqueou a leitura") + ". Tente um print ou o repositório."); return; }
+    } catch (e) { gstat("Erro: " + e.message); return; }
   }
   createFromResult(raw);
 }
-// link social via Cobalt: carrossel (todos os slides) ou vídeo (áudio→transcrição) → vários cards, sem duplicatas.
-async function ingest(u){
-  if(!canAdd())return;
-  gstat("Resolvendo o link (Cobalt) e analisando o conteúdo… pode levar alguns segundos.",1);
-  try{
-    const res=await fetch("/api/ingest",{method:"POST",headers:{"content-type":"application/json",...tokenHdr()},body:JSON.stringify({url:u,prompt:ingestPrompt()})});
-    const j=await res.json().catch(()=>({}));
-    if(!res.ok||!j.ok){gstat("Erro: "+((j&&j.error)||("HTTP "+res.status)));return;}
-    const cards=parseCards(j.raw);
-    if(!cards.length){console.warn("ingest parseCards vazio:\nraw:",j.raw);gstat("Não consegui interpretar a resposta do modelo. <span class='mono' style='opacity:.6'>"+String(j.raw||"").slice(0,90).replace(/</g,"&lt;")+"…</span>");return;}
-    const tipo=j.kind==="carousel"?"carrossel":j.kind==="video"?"vídeo (áudio transcrito)":"link";
-    commitCards(cards,{source:u},tipo);
-  }catch(e){gstat("Erro: "+e.message);}
+
+async function ingest(u) {
+  if (!canAdd()) return;
+  gstat("Resolvendo o link (Cobalt) e analisando o conteúdo… pode levar alguns segundos.", 1);
+  try {
+    const res = await fetch("/api/ingest", { method: "POST", headers: { "content-type": "application/json", ...tokenHdr() }, body: JSON.stringify({ url: u, prompt: ingestPrompt() }) });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || !j.ok) { gstat("Erro: " + ((j && j.error) || ("HTTP " + res.status))); return; }
+    const cards = parseCards(j.raw);
+    if (!cards.length) { console.warn("ingest parseCards vazio:\nraw:", j.raw); gstat("Não consegui interpretar a resposta do modelo. <span class='mono' style='opacity:.6'>" + String(j.raw || "").slice(0, 90).replace(/</g, "&lt;") + "…</span>"); return; }
+    const tipo = j.kind === "carousel" ? "carrossel" : j.kind === "video" ? "vídeo (áudio transcrito)" : "link";
+    commitCards(cards, { source: u }, tipo);
+  } catch (e) { gstat("Erro: " + e.message); }
 }
-async function analyzeImage(file){
-  if(!canAdd())return; if(!file||!/^image\//.test(file.type||"")){gstat("Selecione um arquivo de imagem.");return;}
-  gstat("Analisando a imagem com o Gemini…",1);
-  try{
-    const b64=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(",")[1]);fr.onerror=rej;fr.readAsDataURL(file);});
-    const raw=await gemini({contents:[{parts:[{inline_data:{mime_type:file.type,data:b64}},{text:GPROMPT+"\n\nA imagem acima é um print de referência. Se houver UMA ferramenta/site, catalogue-a. Se houver VÁRIAS (ex.: print de uma lista/página com muitos), catalogue TODAS as distintas. Responda com um ARRAY JSON de objetos [{...}] (ou um único objeto se for só uma)."}]}],generationConfig:{temperature:0.3,maxOutputTokens:8192,responseMimeType:"application/json",thinkingConfig:{thinkingBudget:0}}});
+
+async function analyzeImage(file) {
+  if (!canAdd()) return;
+  if (!file || !/^image\//.test(file.type || "")) { gstat("Selecione um arquivo de imagem."); return; }
+  gstat("Analisando a imagem com o Gemini…", 1);
+  try {
+    const b64 = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1]); fr.onerror = rej; fr.readAsDataURL(file); });
+    const raw = await gemini({ contents: [{ parts: [{ inline_data: { mime_type: file.type, data: b64 } }, { text: GPROMPT + "\n\nA imagem acima é um print de referência. Se houver UMA ferramenta/site, catalogue-a. Se houver VÁRIAS (ex.: print de uma lista/página com muitos), catalogue TODAS as distintas. Responda com um ARRAY JSON de objetos [{...}] (ou um único objeto se for só uma)." }] }], generationConfig: { temperature: 0.3, maxOutputTokens: 8192, responseMimeType: "application/json", thinkingConfig: { thinkingBudget: 0 } } });
     createFromResult(raw);
-  }catch(e){gstat("Erro: "+e.message);}
+  } catch (e) { gstat("Erro: " + e.message); }
 }
-addUrlBtn.onclick=()=>{const u=addUrl.value.trim();if(u){analyzeUrl(u);addUrl.value="";}};
-addUrl.addEventListener("keydown",e=>{if(e.key==="Enter"){const u=addUrl.value.trim();if(u){analyzeUrl(u);addUrl.value="";}}});
-addImg.addEventListener("change",()=>{if(addImg.files[0]){analyzeImage(addImg.files[0]);addImg.value="";}});
-["dragover","dragenter"].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();dropZone.classList.add("over");}));
-["dragleave","dragend"].forEach(ev=>dropZone.addEventListener(ev,e=>{dropZone.classList.remove("over");}));
-dropZone.addEventListener("drop",e=>{e.preventDefault();e.stopPropagation();dropZone.classList.remove("over");const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)analyzeImage(f);});
-// ---------- desbloqueio de edição no deploy (senha → /api/auth) ----------
-async function tryUnlock(tok){ try{const res=await fetch("/api/auth",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({token:tok})});return !!(await res.json()).ok;}catch(_){return false;} }
-etokenBtn.onclick=async()=>{ const v=etoken.value.trim(); if(!v)return; gstat("Verificando…",1);
-  if(await tryUnlock(v)){ EDIT_TOKEN=v; unlocked=true; sessionStorage.setItem("edit-token",v); syncAdder(); buildFilters(); render(); gstat("Edição desbloqueada."); }
-  else gstat("Senha incorreta."); };
-etoken.addEventListener("keydown",e=>{if(e.key==="Enter")etokenBtn.onclick();});
 
-// ---------- sync local ↔ deploy (só no servidor local) ----------
-pullBtn.onclick=async()=>{
-  if(!confirm("Puxar os dados do deploy e sobrescrever o refs-data.js local?"))return;
-  gstat("Puxando do deploy…",1);
-  try{const r=await fetch("/api/pull",{method:"POST"});const j=await r.json();
-    if(j.ok){gstat("Puxado: "+j.count+" refs. Recarregando…");setTimeout(()=>location.reload(),700);}
-    else gstat("Erro: "+j.error);}catch(e){gstat("Erro: "+e.message);}
+addUrlBtn.onclick = () => { const u = addUrl.value.trim(); if (u) { analyzeUrl(u); addUrl.value = ""; } };
+addUrl.addEventListener("keydown", (e) => { if (e.key === "Enter") { const u = addUrl.value.trim(); if (u) { analyzeUrl(u); addUrl.value = ""; } } });
+addImg.addEventListener("change", () => { if (addImg.files[0]) { analyzeImage(addImg.files[0]); addImg.value = ""; } });
+["dragover", "dragenter"].forEach((ev) => dropZone.addEventListener(ev, (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add("over"); }));
+["dragleave", "dragend"].forEach((ev) => dropZone.addEventListener(ev, () => { dropZone.classList.remove("over"); }));
+dropZone.addEventListener("drop", (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove("over"); const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) analyzeImage(f); });
+
+// ---------- desbloqueio (deploy) ----------
+async function tryUnlock(tok) {
+  try { const res = await fetch("/api/auth", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token: tok }) }); return !!(await res.json()).ok; }
+  catch (_) { return false; }
+}
+etokenBtn.onclick = async () => {
+  const v = etoken.value.trim();
+  if (!v) return;
+  gstat("Verificando…", 1);
+  if (await tryUnlock(v)) { EDIT_TOKEN = v; unlocked = true; sessionStorage.setItem("edit-token", v); syncAdder(); buildFilters(); render(); gstat("Edição desbloqueada."); }
+  else gstat("Senha incorreta.");
 };
-pushBtn.onclick=async()=>{
-  let tok=localStorage.getItem("sync-token")||"";
-  if(!tok){tok=(prompt("Senha de edição do deploy (EDIT_TOKEN):")||"").trim(); if(!tok)return; localStorage.setItem("sync-token",tok);}
-  if(!confirm("Enviar o refs-data.js local para o deploy (sobrescreve o que está online)?"))return;
-  gstat("Enviando pro deploy…",1);
-  try{const r=await fetch("/api/push",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({token:tok})});const j=await r.json().catch(()=>({}));
-    if(r.ok&&j.ok){gstat("Enviado ao deploy: "+(j.count||"?")+" refs.");}
-    else if(r.status===401){localStorage.removeItem("sync-token");gstat("Senha incorreta — clique de novo pra tentar.");}
-    else gstat("Erro: "+(j.error||("HTTP "+r.status)));}
-  catch(e){gstat("Erro: "+e.message);}
+etoken.addEventListener("keydown", (e) => { if (e.key === "Enter") etokenBtn.onclick(); });
+
+// ---------- sync local <-> deploy ----------
+pullBtn.onclick = async () => {
+  if (!confirm("Puxar os dados do deploy e sobrescrever o refs-data.js local?")) return;
+  gstat("Puxando do deploy…", 1);
+  try {
+    const r = await fetch("/api/pull", { method: "POST" });
+    const j = await r.json();
+    if (j.ok) { gstat("Puxado: " + j.count + " refs. Recarregando…"); setTimeout(() => location.reload(), 700); }
+    else gstat("Erro: " + j.error);
+  } catch (e) { gstat("Erro: " + e.message); }
+};
+pushBtn.onclick = async () => {
+  let tok = localStorage.getItem("sync-token") || "";
+  if (!tok) { tok = (prompt("Senha de edição do deploy (EDIT_TOKEN):") || "").trim(); if (!tok) return; localStorage.setItem("sync-token", tok); }
+  if (!confirm("Enviar o refs-data.js local para o deploy (sobrescreve o que está online)?")) return;
+  gstat("Enviando pro deploy…", 1);
+  try {
+    const r = await fetch("/api/push", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token: tok }) });
+    const j = await r.json().catch(() => ({}));
+    if (r.ok && j.ok) gstat("Enviado ao deploy: " + (j.count || "?") + " refs.");
+    else if (r.status === 401) { localStorage.removeItem("sync-token"); gstat("Senha incorreta — clique de novo pra tentar."); }
+    else gstat("Erro: " + (j.error || ("HTTP " + r.status)));
+  } catch (e) { gstat("Erro: " + e.message); }
 };
 
-// ---------- Exportar (só no modo file://) ----------
-function exportData(){
-  const out=buildData();
-  const js="/* Gerado pela exportação do catálogo — substitui refs-data.js. */\nwindow.REFS_DATA = "+JSON.stringify(out,null,2)+";\n";
-  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([js],{type:"text/javascript"})); a.download="refs-data.js";
-  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+// ---------- exportar (modo file://) ----------
+function exportData() {
+  const out = buildData();
+  const js = "/* Gerado pela exportação do catálogo — substitui refs-data.js. */\nwindow.REFS_DATA = " + JSON.stringify(out, null, 2) + ";\n";
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([js], { type: "text/javascript" }));
+  a.download = "refs-data.js";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
   gstat(`refs-data.js baixado (${out.refs.length} refs). Substitua o arquivo e recarregue. <a id="clrLocal" style="text-decoration:underline;cursor:pointer">limpar alterações locais</a>`);
-  const cl=document.getElementById("clrLocal"); if(cl)cl.onclick=()=>{["refs-deleted","refs-overrides","refs-added"].forEach(k=>localStorage.removeItem(k));location.reload();};
+  const cl = document.getElementById("clrLocal");
+  if (cl) cl.onclick = () => { [DKEY, OKEY, ADDKEY].forEach((k) => localStorage.removeItem(k)); location.reload(); };
 }
-exportBtn.onclick=exportData;
+exportBtn.onclick = exportData;
 
-// visibilidade do painel (o .adder começa oculto no CSS → sem flash)
-function syncAdder(){
-  const ad=document.querySelector(".adder"), row=document.querySelector(".adder-row"), sub=document.querySelector(".adder-sub");
-  const sortT=document.getElementById("sortToggle"); if(sortT)sortT.style.display=canEdit()?"inline-flex":"none"; // ordenar por data: só admin
-  const sb=document.getElementById("semBar"); if(sb)sb.style.display=SEMANTIC?"block":"none"; // busca semântica: onde o servidor tiver IA (inclui público)
+// ---------- visibilidade ----------
+function syncAdder() {
+  const ad = document.querySelector(".adder"), row = document.querySelector(".adder-row"), sub = document.querySelector(".adder-sub");
+  const sortT = document.getElementById("sortToggle"); if (sortT) sortT.style.display = canEdit() ? "inline-flex" : "none";
+  const sb = document.getElementById("semBar"); if (sb) sb.style.display = SEMANTIC ? "block" : "none";
   exportBtn.style.display = FILE ? "" : "none";
-  if(FILE){ ad.style.display="none"; return; }
-  if(DEPLOY && !healthKnown){ ad.style.display="none"; return; }   // aguarda health (evita flash no espelho)
-  if(READONLY){ ad.style.display="none"; return; }   // espelho: painel some por completo
-  ad.style.display="block";
+  if (FILE) { ad.style.display = "none"; return; }
+  if (DEPLOY && !healthKnown) { ad.style.display = "none"; return; }
+  if (READONLY) { ad.style.display = "none"; return; }
+  ad.style.display = "block";
   syncRow.style.display = LOCALSRV ? "flex" : "none";
-  if(canAdd()){ row.style.display="flex"; unlockRow.style.display="none"; if(sub)sub.textContent="imagem ou URL — o Gemini lê, categoriza e salva o card"; }
-  else{ row.style.display="none"; unlockRow.style.display="flex"; if(sub)sub.textContent="site publicado — desbloqueie com a senha para editar"; }
+  if (canAdd()) { row.style.display = "flex"; unlockRow.style.display = "none"; if (sub) sub.textContent = "imagem ou URL — o Gemini lê, categoriza e salva o card"; }
+  else { row.style.display = "none"; unlockRow.style.display = "flex"; if (sub) sub.textContent = "site publicado — desbloqueie com a senha para editar"; }
 }
 syncAdder();
-// no deploy, consulta o modo (espelho/edição) antes de revelar o painel de edição
-function applyReadonly(){
-  showShots=true;                                                    // espelho: prints sempre ativos
-  if(shotsToggle)shotsToggle.style.display="none";                   // sem toggle
-  document.querySelectorAll(".hint").forEach(el=>el.style.display="none"); // sem eyebrows de instrução
-  const cr=document.getElementById("credit"); if(cr)cr.style.display="block"; // crédito (só no espelho)
-  const tg=document.getElementById("tagline"); if(tg)tg.style.display="block"; // tagline (só no espelho)
-  const sl=document.getElementById("scanline"); if(sl)sl.style.display="none"; // esconde "último scan"
-  const rb=document.getElementById("repoBox"); if(rb)rb.style.display="inline-flex"; // mostra o box do repo
-}
-if(SERVER){ fetch("/api/health").then(r=>r.json()).then(h=>{ SEMANTIC=!!h.semantic; if(DEPLOY){ READONLY=!!h.readOnly; healthKnown=true; if(READONLY)applyReadonly(); } syncAdder(); render(); }).catch(()=>{ healthKnown=true; syncAdder(); }); }
 
-buildFilters();render();
+function applyReadonly() {
+  showShots = true;
+  if (shotsToggle) shotsToggle.style.display = "none";
+  document.querySelectorAll(".hint").forEach((el) => { el.style.display = "none"; });
+  const cr = document.getElementById("credit"); if (cr) cr.style.display = "block";
+  const tg = document.getElementById("tagline"); if (tg) tg.style.display = "block";
+  const sl = document.getElementById("scanline"); if (sl) sl.style.display = "none";
+  const rb = document.getElementById("repoBox"); if (rb) rb.style.display = "inline-flex";
+}
+
+if (SERVER) {
+  fetch("/api/health").then((r) => r.json()).then((h) => {
+    SEMANTIC = !!h.semantic;
+    if (DEPLOY) { READONLY = !!h.readOnly; healthKnown = true; if (READONLY) applyReadonly(); }
+    syncAdder(); render();
+  }).catch(() => { healthKnown = true; syncAdder(); });
+}
+
+buildFilters();
+render();
+
+})();
 </script>
 </body>
 </html>
