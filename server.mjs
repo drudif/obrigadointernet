@@ -240,7 +240,7 @@ const server = http.createServer(async (req, res) => {
       return res.end(body);
     }
     if (req.method === "GET" && req.url === "/api/health") {
-      return json(res, 200, { ok: true, railway: RAILWAY, hasEditToken: !!EDIT_TOKEN, hasGeminiKey: !!GEMINI_API_KEY, usingVolume: DATA_DIR !== DIR, dataDir: DATA_DIR, hasCobalt: !!COBALT_API, readOnly: READ_ONLY, mirror: !!MIRROR_URL, semantic: (!!GEMINI_API_KEY || !!MIRROR_URL) });
+      return json(res, 200, { ok: true, railway: RAILWAY, hasEditToken: !!EDIT_TOKEN, hasGeminiKey: !!GEMINI_API_KEY, usingVolume: DATA_DIR !== DIR, dataDir: DATA_DIR, hasCobalt: !!COBALT_API, readOnly: READ_ONLY, mirror: !!MIRROR_URL, semantic: (!!GEMINI_API_KEY || !!MIRROR_URL) && !READ_ONLY });
     }
     if (req.method === "POST" && req.url === "/api/auth") {
       const { token } = JSON.parse((await readBody(req)) || "{}");
@@ -295,6 +295,7 @@ const server = http.createServer(async (req, res) => {
     }
     // ---- busca semântica PÚBLICA (sem senha): prompt montado no servidor, rate-limit por IP ----
     if (req.method === "POST" && req.url === "/api/semantic") {
+      if (READ_ONLY) return json(res, 403, { ok: false, error: "busca semântica indisponível neste site" }); // fora do espelho
       const ip = clientIp(req);
       if (!rateOk(ip)) return json(res, 429, { ok: false, error: "muitas buscas — aguarde um pouco" });
       let body; try { body = JSON.parse((await readBody(req)) || "{}"); } catch { body = {}; }
